@@ -1,0 +1,8 @@
+db:
+  port: 5432
+  name: sell_store
+  host: localhost
+  user: unflat
+  password: password
+key:
+  jwt: 2345235sgsfg23t
