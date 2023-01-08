@@ -22,20 +22,24 @@ type ProductService interface {
 	GetAll(ctx context.Context, UserID, CatID, SubCatID int) ([]map[string]interface{}, error)
 }
 
-type subcategoryHandler struct {
+type SubcategoryHandler struct {
 	ware auth.MiddleWare
 	sc   SubcatService
 	ps   ProductService
 }
 
-func (h *subcategoryHandler) Register(r *httprouter.Router) {
-	r.POST("", h.ware.IsAuth(h.CreateSubcategory))
-	r.PATCH("", h.ware.IsAuth(h.UpdateSubcategory))
-	r.DELETE("", h.ware.IsAuth(h.DeleteSubcategory))
-	r.GET("", h.ware.IsAuth(h.GetSubcategory))
+func NewSubcategoryHandler(ware auth.MiddleWare, sc SubcatService, ps ProductService) *SubcategoryHandler {
+	return &SubcategoryHandler{ware: ware, sc: sc, ps: ps}
 }
 
-func (h *subcategoryHandler) CreateSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func (h *SubcategoryHandler) Register(r *httprouter.Router) {
+	r.GET("/seller/category/:cat_id/subcategory/:subcat_id", h.ware.IsAuth(h.GetSubcategory))
+	r.POST("/seller/category/:cat_id", h.ware.IsAuth(h.CreateSubcategory))
+	r.PATCH("/seller/category/:cat_id/subcategory/:subcat_id", h.ware.IsAuth(h.UpdateSubcategory))
+	r.DELETE("/seller/category/:cat_id/subcategory/:subcat_id", h.ware.IsAuth(h.DeleteSubcategory))
+}
+
+func (h *SubcategoryHandler) CreateSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	var input CreateSubcatInput
 
 	userID := fmt.Sprintf("%v", r.Context().Value("user_id"))
@@ -44,7 +48,7 @@ func (h *subcategoryHandler) CreateSubcategory(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	catID := params.ByName(":cat_id")
+	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
 		return
@@ -60,6 +64,8 @@ func (h *subcategoryHandler) CreateSubcategory(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	input.CatID = CatID
+
 	id, err := h.sc.Create(r.Context(), input.ToMap(), UserID, CatID)
 	if err != nil {
 		return
@@ -72,7 +78,7 @@ func (h *subcategoryHandler) CreateSubcategory(w http.ResponseWriter, r *http.Re
 
 }
 
-func (h *subcategoryHandler) UpdateSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func (h *SubcategoryHandler) UpdateSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	var input UpdateSubcatInput
 
 	userID := fmt.Sprintf("%v", r.Context().Value("user_id"))
@@ -81,13 +87,13 @@ func (h *subcategoryHandler) UpdateSubcategory(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	catID := params.ByName(":cat_id")
+	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
 		return
 	}
 
-	subcatID := params.ByName(":subcat_id")
+	subcatID := params.ByName("subcat_id")
 	SubCatID, err := strconv.Atoi(subcatID)
 	if err != nil {
 		return
@@ -113,19 +119,19 @@ func (h *subcategoryHandler) UpdateSubcategory(w http.ResponseWriter, r *http.Re
 	}
 }
 
-func (h *subcategoryHandler) DeleteSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func (h *SubcategoryHandler) DeleteSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	userID := fmt.Sprintf("%v", r.Context().Value("user_id"))
 	UserID, err := strconv.Atoi(userID)
 	if err != nil {
 		return
 	}
 
-	catID := params.ByName(":cat_id")
+	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
 		return
 	}
-	subcatID := params.ByName(":subcat_id")
+	subcatID := params.ByName("subcat_id")
 	SubCatID, err := strconv.Atoi(subcatID)
 	if err != nil {
 		return
@@ -142,20 +148,20 @@ func (h *subcategoryHandler) DeleteSubcategory(w http.ResponseWriter, r *http.Re
 	}
 }
 
-func (h *subcategoryHandler) GetSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func (h *SubcategoryHandler) GetSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	userID := fmt.Sprintf("%v", r.Context().Value("user_id"))
 	UserID, err := strconv.Atoi(userID)
 	if err != nil {
 		return
 	}
 
-	catID := params.ByName(":cat_id")
+	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
 		return
 	}
 
-	subcatID := params.ByName(":subcat_id")
+	subcatID := params.ByName("subcat_id")
 	SubCatID, err := strconv.Atoi(subcatID)
 	if err != nil {
 		return
