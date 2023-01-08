@@ -1,5 +1,7 @@
 package seller
 
+import "log"
+
 type SignUpInput struct {
 	Username  string `json:"username,omitempty"`
 	Firstname string `json:"firstname,omitempty"`
@@ -9,16 +11,23 @@ type SignUpInput struct {
 	SellerKey string `json:"seller_key,omitempty"`
 }
 
-func (m *SignUpInput) ToMap() map[string]interface{} {
+func (m SignUpInput) ToMap() map[string]interface{} {
 
-	var SellerMap map[string]interface{}
+	log.Println(m)
+	var SellerMap = make(map[string]interface{})
 
-	SellerMap["username"] = m.Username
-	SellerMap["firstname"] = m.Firstname
-	SellerMap["lastname"] = m.Lastname
+	if m.Firstname != "" {
+		SellerMap["firstname"] = m.Firstname
+	}
+	if m.Username != "" {
+		SellerMap["username"] = m.Username
+	}
+	if m.Lastname != "" {
+		SellerMap["lastname"] = m.Lastname
+	}
 
 	if m.Password != "" {
-		SellerMap["password"] = m.Password
+		SellerMap["pass"] = m.Password
 	}
 	if m.SellerID != 0 {
 		SellerMap["seller_id"] = m.SellerID
@@ -36,12 +45,41 @@ type SignInInput struct {
 
 func (m *SignInInput) ToMap() map[string]interface{} {
 
-	var SellerMap map[string]interface{}
+	var SellerMap = make(map[string]interface{})
 
 	SellerMap["username"] = m.Username
 
 	if m.Password != "" {
 		SellerMap["password"] = m.Password
+	}
+	return SellerMap
+}
+
+type UpdateInput struct {
+	Firstname string `json:"firstname,omitempty"`
+	Lastname  string `json:"lastname,omitempty"`
+	Password  string `json:"password,omitempty"`
+	SellerID  int    `json:"seller_id,omitempty"`
+	SellerKey string `json:"seller_key,omitempty"`
+}
+
+func (m *UpdateInput) ToMap() map[string]interface{} {
+	var SellerMap map[string]interface{}
+
+	if m.Password != "" {
+		SellerMap["password"] = m.Password
+	}
+	if m.Firstname != "" {
+		SellerMap["firstname"] = m.Password
+	}
+	if m.Lastname != "" {
+		SellerMap["lastname"] = m.Password
+	}
+	if m.SellerKey != "" {
+		SellerMap["seller_key"] = m.Password
+	}
+	if m.SellerID != 0 {
+		SellerMap["seller_id"] = m.Password
 	}
 	return SellerMap
 }
