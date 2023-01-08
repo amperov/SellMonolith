@@ -34,7 +34,7 @@ func InitPGConfig() (*pgConfig, error) {
 }
 
 func GetPGClient(ctx context.Context, cfg *pgConfig) (*pgxpool.Pool, error) {
-	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", cfg.Host, cfg.Port, cfg.Username, cfg.Password, cfg.DBName)
+	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.DBName)
 	pool, err := pgxpool.New(ctx, dsn)
 	if err != nil {
 		log.Println("error: connecting to DB")
