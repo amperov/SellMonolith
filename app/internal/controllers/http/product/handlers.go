@@ -16,19 +16,23 @@ type ProductService interface {
 	Update(ctx context.Context, m map[string]interface{}, UserID, CatID, SubCatID, ProdID int) (int, error)
 	Delete(ctx context.Context, UserID, CatID, SubCatID, ProdID int) error
 }
-type productHandler struct {
+type ProductHandler struct {
 	ware auth.MiddleWare
 	ps   ProductService
 }
 
-func (h *productHandler) Register(r *httprouter.Router) {
-	r.POST("", h.ware.IsAuth(h.CreateOne))
-	r.POST("", h.ware.IsAuth(h.CreateMany))
-	r.PATCH("", h.ware.IsAuth(h.UpdateProduct))
-	r.DELETE("", h.ware.IsAuth(h.DeleteProduct))
+func NewProductHandler(ware auth.MiddleWare, ps ProductService) *ProductHandler {
+	return &ProductHandler{ware: ware, ps: ps}
 }
 
-func (h *productHandler) UpdateProduct(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func (h *ProductHandler) Register(r *httprouter.Router) {
+	r.POST("/seller/category/:cat_id/subcategory/:subcat_id/one", h.ware.IsAuth(h.CreateOne))
+	r.POST("/seller/category/:cat_id/subcategory/:subcat_id/many", h.ware.IsAuth(h.CreateMany))
+	r.PATCH("/seller/category/:cat_id/subcategory/:subcat_id/products/:product_id", h.ware.IsAuth(h.UpdateProduct))
+	r.DELETE("/seller/category/:cat_id/subcategory/:subcat_id/products/:product_id", h.ware.IsAuth(h.DeleteProduct))
+}
+
+func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	var input UpdateProductInput
 
 	userID := fmt.Sprintf("%v", r.Context().Value("user_id"))
@@ -37,19 +41,19 @@ func (h *productHandler) UpdateProduct(w http.ResponseWriter, r *http.Request, p
 		return
 	}
 
-	catID := params.ByName(":cat_id")
+	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
 		return
 	}
 
-	subcatID := params.ByName(":subcat_id")
+	subcatID := params.ByName("subcat_id")
 	SubCatID, err := strconv.Atoi(subcatID)
 	if err != nil {
 		return
 	}
 
-	prodID := params.ByName(":product_id")
+	prodID := params.ByName("product_id")
 	ProductID, err := strconv.Atoi(prodID)
 	if err != nil {
 		return
@@ -76,7 +80,7 @@ func (h *productHandler) UpdateProduct(w http.ResponseWriter, r *http.Request, p
 	}
 }
 
-func (h *productHandler) DeleteProduct(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	userID := fmt.Sprintf("%v", r.Context().Value("user_id"))
 	UserID, err := strconv.Atoi(userID)
 	if err != nil {
@@ -111,7 +115,7 @@ func (h *productHandler) DeleteProduct(w http.ResponseWriter, r *http.Request, p
 	}
 }
 
-func (h *productHandler) CreateOne(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func (h *ProductHandler) CreateOne(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	var input CreateProductInput
 
 	userID := fmt.Sprintf("%v", r.Context().Value("user_id"))
@@ -153,7 +157,7 @@ func (h *productHandler) CreateOne(w http.ResponseWriter, r *http.Request, param
 	}
 }
 
-func (h *productHandler) CreateMany(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func (h *ProductHandler) CreateMany(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	var input CreateProductsInput
 
 	userID := fmt.Sprintf("%v", r.Context().Value("user_id"))
@@ -183,10 +187,11 @@ func (h *productHandler) CreateMany(w http.ResponseWriter, r *http.Request, para
 		return
 	}
 
+	//TODO Need Testing
 	count := 0
-	for i := 0; i < len(input.products); i++ {
+	for i := 0; i < len(input.Products); i++ {
 
-		_, err := h.ps.Create(r.Context(), input.products[i].ToMap(), UserID, CatID, SubCatID)
+		_, err := h.ps.Create(r.Context(), input.Products[i].ToMap(), UserID, CatID, SubCatID)
 		if err != nil {
 			continue
 		}
