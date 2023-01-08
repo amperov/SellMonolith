@@ -8,7 +8,7 @@ type CreateCategoryInput struct {
 }
 
 func (c *CreateCategoryInput) ToMap() map[string]interface{} {
-	var cat map[string]interface{}
+	var cat = make(map[string]interface{})
 
 	cat["title_ru"] = c.TitleRu
 	cat["title_eng"] = c.TitleEng
@@ -24,7 +24,7 @@ type UpdateCategoryInput struct {
 }
 
 func (c *UpdateCategoryInput) ToMap() map[string]interface{} {
-	var cat map[string]interface{}
+	var cat = make(map[string]interface{})
 
 	if cat["title_ru"] != "" {
 		cat["title_ru"] = c.TitleRu
