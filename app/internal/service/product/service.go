@@ -1,6 +1,9 @@
 package product
 
-import "context"
+import (
+	"context"
+	"log"
+)
 
 type ProductStore interface {
 	Create(ctx context.Context, m map[string]interface{}) (int, error)
@@ -45,6 +48,7 @@ func (p *ProductService) Delete(ctx context.Context, UserID, CatID, SubCatID, Pr
 func (p *ProductService) GetAll(ctx context.Context, UserID, CatID, SubCatID int) ([]map[string]interface{}, error) {
 	all, err := p.p.GetAll(ctx, SubCatID)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 	return all, nil
