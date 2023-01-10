@@ -20,8 +20,7 @@ func (c *ProdForClient) ToMap() map[string]interface{} {
 	return m
 }
 func (c *ProdForClient) ToMapForSeller() map[string]interface{} {
-	var m map[string]interface{}
-
+	m := make(map[string]interface{})
 	m["id"] = c.ID
 	m["content"] = c.Content
 	m["subcategory_id"] = c.SubcategoryID
