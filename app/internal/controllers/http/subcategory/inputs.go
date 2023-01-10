@@ -6,7 +6,7 @@ type CreateSubcatInput struct {
 }
 
 func (c *CreateSubcatInput) ToMap() map[string]interface{} {
-	var m map[string]interface{}
+	m := make(map[string]interface{})
 
 	m["title"] = c.Title
 	m["category_id"] = c.CatID
@@ -19,7 +19,7 @@ type UpdateSubcatInput struct {
 }
 
 func (c *UpdateSubcatInput) ToMap() map[string]interface{} {
-	var m map[string]interface{}
+	m := make(map[string]interface{})
 
 	m["title"] = c.Title
 	m["category_id"] = c.CatID
