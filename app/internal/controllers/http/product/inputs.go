@@ -7,7 +7,7 @@ type CreateProductInput struct {
 
 func (c *CreateProductInput) ToMap() map[string]interface{} {
 	m := make(map[string]interface{})
-	m["content"] = c.Content
+	m["content_key"] = c.Content
 	m["subcategory_id"] = c.SubCatID
 	return m
 }
@@ -20,7 +20,7 @@ type UpdateProductInput struct {
 func (c *UpdateProductInput) ToMap() map[string]interface{} {
 	m := make(map[string]interface{})
 	if c.Content != "" {
-		m["content"] = c.Content
+		m["content_key"] = c.Content
 		return m
 	}
 	return nil
