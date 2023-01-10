@@ -4,7 +4,6 @@ import (
 	"Selling/app/pkg/auth"
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
@@ -25,16 +24,12 @@ func NewHistoryHandler(ware auth.MiddleWare, hs HistoryService) *HistoryHandler 
 }
 
 func (h *HistoryHandler) Register(r *httprouter.Router) {
-	r.GET("/seller/history", h.ware.IsAuth(h.GetHistory))
-	r.GET("/seller/history/:tran_id", h.ware.IsAuth(h.GetFullTransaction))
+	r.GET("/api/seller/history", h.ware.IsAuth(h.GetHistory))
+	r.GET("/api/seller/history/:tran_id", h.ware.IsAuth(h.GetFullTransaction))
 }
 
 func (h *HistoryHandler) GetHistory(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	userID := fmt.Sprintf("%v", r.Context().Value("user_id"))
-	UserID, err := strconv.Atoi(userID)
-	if err != nil {
-		return
-	}
+	UserID := r.Context().Value("user_id").(int)
 
 	transactions, err := h.hs.GetAllTransactions(r.Context(), UserID)
 	if err != nil {
@@ -53,11 +48,7 @@ func (h *HistoryHandler) GetHistory(w http.ResponseWriter, r *http.Request, _ ht
 }
 
 func (h *HistoryHandler) GetFullTransaction(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	userID := fmt.Sprintf("%v", r.Context().Value("user_id"))
-	UserID, err := strconv.Atoi(userID)
-	if err != nil {
-		return
-	}
+	UserID := r.Context().Value("user_id").(int)
 
 	tran_id := params.ByName("tran_id")
 	tranID, err := strconv.Atoi(tran_id)

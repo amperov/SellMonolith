@@ -1,7 +1,5 @@
 package seller
 
-import "log"
-
 type SignUpInput struct {
 	Username  string `json:"username,omitempty"`
 	Firstname string `json:"firstname,omitempty"`
@@ -13,7 +11,6 @@ type SignUpInput struct {
 
 func (m SignUpInput) ToMap() map[string]interface{} {
 
-	log.Println(m)
 	var SellerMap = make(map[string]interface{})
 
 	if m.Firstname != "" {
@@ -64,22 +61,22 @@ type UpdateInput struct {
 }
 
 func (m *UpdateInput) ToMap() map[string]interface{} {
-	var SellerMap map[string]interface{}
+	var SellerMap = make(map[string]interface{})
 
 	if m.Password != "" {
 		SellerMap["password"] = m.Password
 	}
 	if m.Firstname != "" {
-		SellerMap["firstname"] = m.Password
+		SellerMap["firstname"] = m.Firstname
 	}
 	if m.Lastname != "" {
-		SellerMap["lastname"] = m.Password
+		SellerMap["lastname"] = m.Lastname
 	}
 	if m.SellerKey != "" {
-		SellerMap["seller_key"] = m.Password
+		SellerMap["seller_key"] = m.SellerKey
 	}
 	if m.SellerID != 0 {
-		SellerMap["seller_id"] = m.Password
+		SellerMap["seller_id"] = m.SellerID
 	}
 	return SellerMap
 }

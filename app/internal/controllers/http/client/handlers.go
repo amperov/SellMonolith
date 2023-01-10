@@ -20,7 +20,7 @@ func NewClientHandlers(c ClientService) *ClientHandlers {
 }
 
 func (h *ClientHandlers) Register(r *httprouter.Router) {
-	r.GET("/client/:username", h.GetProducts)
+	r.GET("/api/client/:username", h.GetProducts)
 }
 
 func (h *ClientHandlers) GetProducts(w http.ResponseWriter, r *http.Request, params httprouter.Params) {

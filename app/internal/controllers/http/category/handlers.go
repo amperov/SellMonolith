@@ -43,11 +43,11 @@ func NewCategoryHandler(ware auth.MiddleWare, cat CatService, sc SubCatService, 
 }
 
 func (h *CategoryHandler) Register(r *httprouter.Router) {
-	r.GET("/seller/category", h.ware.IsAuth(h.GetAllCategory))
-	r.GET("/seller/category/:cat_id", h.ware.IsAuth(h.GetCategory))
-	r.POST("/seller/category", h.ware.IsAuth(h.CreateCategory))
-	r.PATCH("/seller/category/:cat_id", h.ware.IsAuth(h.UpdateCategory))
-	r.DELETE("/seller/category/:cat_id", h.ware.IsAuth(h.DeleteCategory))
+	r.GET("/api/seller/category", h.ware.IsAuth(h.GetAllCategory))
+	r.GET("/api/seller/category/:cat_id", h.ware.IsAuth(h.GetCategory))
+	r.POST("/api/seller/category", h.ware.IsAuth(h.CreateCategory))
+	r.PATCH("/api/seller/category/:cat_id", h.ware.IsAuth(h.UpdateCategory))
+	r.DELETE("/api/seller/category/:cat_id", h.ware.IsAuth(h.DeleteCategory))
 }
 
 func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

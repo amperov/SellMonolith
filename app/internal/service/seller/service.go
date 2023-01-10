@@ -10,10 +10,15 @@ type SellerStore interface {
 	SignUp(ctx context.Context, m map[string]interface{}) (int, error)
 	SignIn(ctx context.Context, m map[string]interface{}) (int, error)
 	UpdateData(ctx context.Context, m map[string]interface{}, UserID int) error
+	GetInfo(ctx context.Context, UserID int) (map[string]interface{}, error)
 }
 type SellerService struct {
 	tm auth.TokenManager
 	s  SellerStore
+}
+
+func (s *SellerService) GetInfo(ctx context.Context, UserID int) (map[string]interface{}, error) {
+	return s.s.GetInfo(ctx, UserID)
 }
 
 func NewSellerService(tm auth.TokenManager, s SellerStore) *SellerService {

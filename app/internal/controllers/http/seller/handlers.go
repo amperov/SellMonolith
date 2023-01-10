@@ -9,13 +9,13 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 type Service interface {
 	SignUp(ctx context.Context, m map[string]interface{}) (int, error)
 	SignIn(ctx context.Context, m map[string]interface{}) (string, error)
 	UpdateData(ctx context.Context, m map[string]interface{}, UserID int) error
+	GetInfo(ctx context.Context, UserID int) (map[string]interface{}, error)
 }
 
 type SellerHandler struct {
@@ -28,9 +28,10 @@ func NewSellerHandler(ware auth.MiddleWare, s Service) *SellerHandler {
 }
 
 func (s *SellerHandler) Register(r *httprouter.Router) {
-	r.POST("/auth/sign-in", s.AuthUser)
-	r.POST("/auth/sign-up", s.CreateUser)
-	r.PATCH("/seller/update", s.ware.IsAuth(s.UpdateData))
+	r.POST("/api/auth/sign-in", s.AuthUser)
+	r.POST("/api/auth/sign-up", s.CreateUser)
+	r.PATCH("/api/seller/update", s.ware.IsAuth(s.UpdateData))
+	r.GET("/api/seller/info", s.ware.IsAuth(s.GetInfo))
 }
 
 func (s *SellerHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -90,11 +91,7 @@ func (s *SellerHandler) AuthUser(w http.ResponseWriter, r *http.Request, _ httpr
 func (s *SellerHandler) UpdateData(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	w.Header().Add("Content-Type", "application/json")
 	var upd UpdateInput
-	userID := fmt.Sprintf("%v", r.Context().Value("user_id"))
-	UserID, err := strconv.Atoi(userID)
-	if err != nil {
-		return
-	}
+	UserID := r.Context().Value("user_id").(int)
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -106,9 +103,26 @@ func (s *SellerHandler) UpdateData(w http.ResponseWriter, r *http.Request, _ htt
 		return
 	}
 
+	log.Println(upd.ToMap())
 	err = s.s.UpdateData(r.Context(), upd.ToMap(), UserID)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+}
+
+func (s *SellerHandler) GetInfo(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	UserID := r.Context().Value("user_id").(int)
+
+	info, err := s.s.GetInfo(r.Context(), UserID)
 	if err != nil {
 		return
 	}
 
+	marshal, err := json.Marshal(info)
+	if err != nil {
+		return
+	}
+	w.Write(marshal)
 }
