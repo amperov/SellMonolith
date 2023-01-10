@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
+	"github.com/sirupsen/logrus"
 	"io"
 	"log"
 	"net/http"
@@ -34,10 +35,11 @@ type CategoryHandler struct {
 	ware auth.MiddleWare
 	cat  CatService
 	sc   SubCatService
+	ps   ProductService
 }
 
-func NewCategoryHandler(ware auth.MiddleWare, cat CatService, sc SubCatService) *CategoryHandler {
-	return &CategoryHandler{ware: ware, cat: cat, sc: sc}
+func NewCategoryHandler(ware auth.MiddleWare, cat CatService, sc SubCatService, ps ProductService) *CategoryHandler {
+	return &CategoryHandler{ware: ware, cat: cat, sc: sc, ps: ps}
 }
 
 func (h *CategoryHandler) Register(r *httprouter.Router) {
@@ -50,12 +52,7 @@ func (h *CategoryHandler) Register(r *httprouter.Router) {
 
 func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var input CreateCategoryInput
-	userID := fmt.Sprintf("%s", r.Context().Value("user_id"))
-	UserID, err := strconv.Atoi(userID)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	UserID := r.Context().Value("user_id").(int)
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -154,6 +151,17 @@ func (h *CategoryHandler) GetCategory(w http.ResponseWriter, r *http.Request, pa
 		return
 	}
 	subcategories, err := h.sc.GetAll(r.Context(), UserID, CatID)
+	if err != nil {
+		log.Println(err)
+	}
+	for _, subcategory := range subcategories {
+		count, err := h.ps.GetCount(r.Context(), UserID, CatID, subcategory["id"].(int))
+		if err != nil {
+			logrus.Println(err)
+			return
+		}
+		subcategory["count_products"] = count
+	}
 
 	cat["subcategories"] = subcategories
 
@@ -180,10 +188,13 @@ func (h *CategoryHandler) GetAllCategory(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
+	log.Printf("%v", cats)
 	for _, cat := range cats {
+		log.Println(cat)
 		count, err := h.sc.GetCount(r.Context(), UserID, cat["id"].(int))
 		if err != nil {
-			return
+			log.Println(err)
+			count = 0
 		}
 		cat["count_subcategories"] = count
 	}
@@ -194,6 +205,7 @@ func (h *CategoryHandler) GetAllCategory(w http.ResponseWriter, r *http.Request,
 	}
 	_, err = w.Write(catsMarshalled)
 	if err != nil {
+		log.Println(err)
 		return
 	}
 }
