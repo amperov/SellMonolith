@@ -10,7 +10,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 type Service interface {
@@ -85,15 +84,7 @@ func (s *SellerHandler) AuthUser(w http.ResponseWriter, r *http.Request, _ httpr
 		return
 	}
 
-	cookie := http.Cookie{
-		Name:       "JWT",
-		Value:      token,
-		Expires:    time.Time{}.Add(90 * 24 * 60 * 60 * time.Second),
-		RawExpires: "",
-		HttpOnly:   true,
-	}
-
-	http.SetCookie(w, &cookie)
+	w.Write([]byte(fmt.Sprintf(`{"JWT": "%s"}`, token)))
 }
 
 func (s *SellerHandler) UpdateData(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
