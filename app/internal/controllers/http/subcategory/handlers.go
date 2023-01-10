@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -42,25 +43,24 @@ func (h *SubcategoryHandler) Register(r *httprouter.Router) {
 func (h *SubcategoryHandler) CreateSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	var input CreateSubcatInput
 
-	userID := fmt.Sprintf("%v", r.Context().Value("user_id"))
-	UserID, err := strconv.Atoi(userID)
-	if err != nil {
-		return
-	}
+	UserID := r.Context().Value("user_id").(int)
 
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
+		log.Println(err)
 		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		log.Println(err)
 		return
 	}
 
 	err = json.Unmarshal(body, &input)
 	if err != nil {
+		log.Println(err)
 		return
 	}
 
@@ -68,11 +68,13 @@ func (h *SubcategoryHandler) CreateSubcategory(w http.ResponseWriter, r *http.Re
 
 	id, err := h.sc.Create(r.Context(), input.ToMap(), UserID, CatID)
 	if err != nil {
+		log.Println(err)
 		return
 	}
 
 	_, err = w.Write([]byte(fmt.Sprintf(`{"success" : "subcategory with ID %d created"}`, id)))
 	if err != nil {
+		log.Println(err)
 		return
 	}
 
@@ -81,12 +83,7 @@ func (h *SubcategoryHandler) CreateSubcategory(w http.ResponseWriter, r *http.Re
 func (h *SubcategoryHandler) UpdateSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	var input UpdateSubcatInput
 
-	userID := fmt.Sprintf("%v", r.Context().Value("user_id"))
-	UserID, err := strconv.Atoi(userID)
-	if err != nil {
-		return
-	}
-
+	UserID := r.Context().Value("user_id").(int)
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
@@ -108,8 +105,10 @@ func (h *SubcategoryHandler) UpdateSubcategory(w http.ResponseWriter, r *http.Re
 	if err != nil {
 		return
 	}
+	input.CatID = CatID
 	id, err := h.sc.Update(r.Context(), input.ToMap(), UserID, CatID, SubCatID)
 	if err != nil {
+		log.Println(err)
 		return
 	}
 
@@ -120,11 +119,7 @@ func (h *SubcategoryHandler) UpdateSubcategory(w http.ResponseWriter, r *http.Re
 }
 
 func (h *SubcategoryHandler) DeleteSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	userID := fmt.Sprintf("%v", r.Context().Value("user_id"))
-	UserID, err := strconv.Atoi(userID)
-	if err != nil {
-		return
-	}
+	UserID := r.Context().Value("user_id").(int)
 
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
@@ -149,31 +144,31 @@ func (h *SubcategoryHandler) DeleteSubcategory(w http.ResponseWriter, r *http.Re
 }
 
 func (h *SubcategoryHandler) GetSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	userID := fmt.Sprintf("%v", r.Context().Value("user_id"))
-	UserID, err := strconv.Atoi(userID)
-	if err != nil {
-		return
-	}
+	log.Println("Get Subcategory")
+	UserID := r.Context().Value("user_id").(int)
 
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
+		log.Println(catID)
 		return
 	}
 
 	subcatID := params.ByName("subcat_id")
 	SubCatID, err := strconv.Atoi(subcatID)
 	if err != nil {
+		log.Println(err)
 		return
 	}
 	cat, err := h.sc.Get(r.Context(), UserID, CatID, SubCatID)
 	if err != nil {
+		log.Println(err)
 		return
 	}
-
+	log.Println(cat)
 	products, err := h.ps.GetAll(r.Context(), UserID, CatID, SubCatID)
 	if err != nil {
-		return
+		log.Println(err)
 	}
 
 	cat["products"] = products
