@@ -9,7 +9,8 @@ type Category struct {
 }
 
 func (m *Category) ToMap() map[string]interface{} {
-	var ModelMap map[string]interface{}
+	ModelMap := make(map[string]interface{})
+	ModelMap["id"] = m.ID
 	ModelMap["title_ru"] = m.TitleRu
 	ModelMap["title_eng"] = m.TitleEng
 	ModelMap["description"] = m.Description
