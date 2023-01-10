@@ -73,7 +73,7 @@ func main() {
 	sellerHandler.Register(router)
 	prodHandler := product3.NewProductHandler(ware, prodService)
 	prodHandler.Register(router)
-	catHandler := category3.NewCategoryHandler(ware, catService, subcatService)
+	catHandler := category3.NewCategoryHandler(ware, catService, subcatService, prodService)
 	catHandler.Register(router)
 	subcatHandler := subcategory3.NewSubcategoryHandler(ware, subcatService, prodService)
 	subcatHandler.Register(router)
