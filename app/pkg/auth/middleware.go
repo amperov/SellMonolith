@@ -19,19 +19,16 @@ func NewMiddleWare(tm TokenManager) MiddleWare {
 func (w *MiddleWare) IsAuth(handle httprouter.Handle) httprouter.Handle {
 
 	return func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+		var id int
 		header := request.Header.Get("Authorization")
 		headerArray := strings.Split(header, " ")
-		if len(headerArray) != 2 {
 
-		}
-		logrus.Println(headerArray[1])
 		id, err := w.tm.ValidateToken(headerArray[1])
 		if err != nil {
 			logrus.Println(err)
 			return
 		}
-		ctx := context.WithValue(request.Context(), "userID", id)
-		request.WithContext(ctx)
+		ctx := context.WithValue(request.Context(), "user_id", id)
 
 		handle(writer, request.WithContext(ctx), params)
 	}
