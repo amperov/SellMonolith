@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"strconv"
+	"log"
 )
 
 var table = "category"
@@ -92,13 +92,13 @@ func (c *CategoryStorage) GetOne(ctx context.Context, CatID int) (map[string]int
 		return nil, err
 	}
 
+	cat.ID = CatID
 	return cat.ToMap(), nil
 }
 
 func (c *CategoryStorage) GetAll(ctx context.Context, UserID int) ([]map[string]interface{}, error) {
-	var cats []Category
 
-	query, args, err := squirrel.Select("title_ru", "title_eng", "description", "user_id").
+	query, args, err := squirrel.Select("id", "title_ru", "title_eng", "description", "user_id").
 		Where(squirrel.Eq{"user_id": UserID}).
 		PlaceholderFormat(squirrel.Dollar).From(table).ToSql()
 	if err != nil {
@@ -107,20 +107,23 @@ func (c *CategoryStorage) GetAll(ctx context.Context, UserID int) ([]map[string]
 
 	rows, err := c.c.Query(ctx, query, args...)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
+
 	var arrayMap []map[string]interface{}
+
 	for rows.Next() {
 		var cat Category
-		var um map[string]interface{}
 
-		err = rows.Scan(&cat.TitleRu, &cat.TitleEng, &cat.Description, &cat.UserID)
+		err = rows.Scan(&cat.ID, &cat.TitleRu, &cat.TitleEng, &cat.Description, &cat.UserID)
 		if err != nil {
+			log.Print(err)
 			return nil, err
 		}
-		um[strconv.Itoa(cat.ID)] = cat.ToMap()
-		arrayMap = append(arrayMap, um)
-		cats = append(cats, cat)
+		log.Printf("CatID: %v", cat.ID)
+		arrayMap = append(arrayMap, cat.ToMap())
+
 	}
 
 	return arrayMap, nil
