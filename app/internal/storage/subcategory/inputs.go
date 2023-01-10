@@ -7,8 +7,8 @@ type Subcategory struct {
 }
 
 func (s *Subcategory) ToMap() map[string]interface{} {
-	var ModelMap map[string]interface{}
-
+	ModelMap := make(map[string]interface{})
+	ModelMap["id"] = s.ID
 	ModelMap["title"] = s.Title
 	ModelMap["category_id"] = s.CategoryID
 
