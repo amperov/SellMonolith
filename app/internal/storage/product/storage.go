@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"log"
 )
 
 type ProductStorage struct {
@@ -24,7 +25,9 @@ func (p *ProductStorage) SearchByUniqueCode(ctx context.Context, UniqueCode stri
 	var input ProdForClient
 	var m map[string]interface{}
 	var arrayMap []map[string]interface{}
-	query, args, err := squirrel.Select("id", "content", "category", "subcategory", "date_check").From(transactionTable).Where(squirrel.Eq{"unique_code": UniqueCode}).PlaceholderFormat(squirrel.Dollar).ToSql()
+
+	query, args, err := squirrel.Select("id", "content", "category", "subcategory", "date_check").From(transactionTable).
+		Where(squirrel.Eq{"unique_code": UniqueCode}).PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
 		return nil, false
 	}
@@ -49,10 +52,11 @@ func (p *ProductStorage) Create(ctx context.Context, m map[string]interface{}) (
 	if err != nil {
 		return 0, err
 	}
-	row := p.c.QueryRow(ctx, query, args)
+	row := p.c.QueryRow(ctx, query, args...)
 
 	err = row.Scan(&id)
 	if err != nil {
+		log.Println(err)
 		return 0, err
 	}
 
@@ -61,11 +65,11 @@ func (p *ProductStorage) Create(ctx context.Context, m map[string]interface{}) (
 
 func (p *ProductStorage) Update(ctx context.Context, m map[string]interface{}, ProdID int) (int, error) {
 	var id int
-	query, args, err := squirrel.Update(prodTable).PlaceholderFormat(squirrel.Dollar).SetMap(m).Suffix("RETURNING id").ToSql()
+	query, args, err := squirrel.Update(prodTable).PlaceholderFormat(squirrel.Dollar).SetMap(m).Suffix("RETURNING id").Where(squirrel.Eq{"id": ProdID}).ToSql()
 	if err != nil {
 		return 0, err
 	}
-	row := p.c.QueryRow(ctx, query, args)
+	row := p.c.QueryRow(ctx, query, args...)
 
 	err = row.Scan(&id)
 	if err != nil {
@@ -92,15 +96,19 @@ func (p *ProductStorage) GetAll(ctx context.Context, SubCatID int) ([]map[string
 	var i ProdForClient
 	query, args, err := squirrel.Select("id", "content_key").From(prodTable).Where(squirrel.Eq{"subcategory_id": SubCatID}).PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 	rows, err := p.c.Query(ctx, query, args...)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 	for rows.Next() {
+		i.SubcategoryID = SubCatID
 		err := rows.Scan(&i.ID, &i.Content)
 		if err != nil {
+			log.Println(err)
 			return nil, err
 		}
 		m = append(m, i.ToMapForSeller())
@@ -110,13 +118,10 @@ func (p *ProductStorage) GetAll(ctx context.Context, SubCatID int) ([]map[string
 
 func (p *ProductStorage) GetCount(ctx context.Context, SubCatID int) (int, error) {
 	var count int
-	query, args, err := squirrel.Select("id").From(prodTable).PlaceholderFormat(squirrel.Dollar).Prefix("SELECT count(").Suffix(")").Where(squirrel.Eq{"subcategory_id": SubCatID}).ToSql()
-	if err != nil {
-		return 0, err
-	}
+	query := fmt.Sprintf("SELECT count(id) FROM %s WHERE subcategory_id=$1", prodTable)
 
-	row := p.c.QueryRow(ctx, query, args...)
-	err = row.Scan(&count)
+	row := p.c.QueryRow(ctx, query, SubCatID)
+	err := row.Scan(&count)
 	if err != nil {
 		return 0, err
 	}
