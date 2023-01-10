@@ -2,12 +2,13 @@ package subcategory
 
 import (
 	"context"
+	"fmt"
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"strconv"
+	"log"
 )
 
-var table = "subcategories"
+var table = "subcategory"
 
 type SubcategoryStorage struct {
 	c *pgxpool.Pool
@@ -18,29 +19,29 @@ func NewSubcategoryStorage(c *pgxpool.Pool) *SubcategoryStorage {
 }
 
 func (c *SubcategoryStorage) GetAll(ctx context.Context, CatID int) ([]map[string]interface{}, error) {
-	var cats []Subcategory
 
-	query, args, err := squirrel.Select("title", "category_id").Where(squirrel.Eq{"user_id": CatID}).PlaceholderFormat(squirrel.Dollar).ToSql()
+	query, args, err := squirrel.Select("id", "title").Where(squirrel.Eq{"category_id": CatID}).PlaceholderFormat(squirrel.Dollar).From(table).ToSql()
 	if err != nil {
+		log.Printf("error make query: %v", err)
 		return nil, err
 	}
 
 	rows, err := c.c.Query(ctx, query, args...)
 	if err != nil {
+		log.Printf("error query: %v", err)
 		return nil, err
 	}
 	var arrayMap []map[string]interface{}
 	for rows.Next() {
 		var cat Subcategory
-		var um map[string]interface{}
 
-		err = rows.Scan(&cat.Title, &cat.CategoryID)
+		err = rows.Scan(&cat.ID, &cat.Title)
 		if err != nil {
+			log.Printf("error scan: %v", err)
 			return nil, err
 		}
-		um[strconv.Itoa(cat.ID)] = cat.ToMap()
-		arrayMap = append(arrayMap, um)
-		cats = append(cats, cat)
+		cat.CategoryID = CatID
+		arrayMap = append(arrayMap, cat.ToMap())
 	}
 
 	return arrayMap, nil
@@ -48,16 +49,11 @@ func (c *SubcategoryStorage) GetAll(ctx context.Context, CatID int) ([]map[strin
 
 func (c *SubcategoryStorage) GetCount(ctx context.Context, CatID int) (int, error) {
 	var count int
-	query, args, err := squirrel.Select("id").Prefix("SELECT EXISTS(").Suffix(")").
-		From(table).Where(squirrel.Eq{"category_id": CatID}).
-		PlaceholderFormat(squirrel.Dollar).ToSql()
-	if err != nil {
-		return 0, err
-	}
+	query := fmt.Sprintf("SELECT count(id) FROM %s WHERE category_id=$1", table)
 
-	row := c.c.QueryRow(ctx, query, args...)
+	row := c.c.QueryRow(ctx, query, CatID)
 
-	err = row.Scan(&count)
+	err := row.Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -81,7 +77,8 @@ func (c *SubcategoryStorage) Create(ctx context.Context, m map[string]interface{
 
 func (c *SubcategoryStorage) Update(ctx context.Context, m map[string]interface{}, SubCatID int) (int, error) {
 	var id int
-	query, args, err := squirrel.Update(table).Where(squirrel.Eq{"id": SubCatID}).PlaceholderFormat(squirrel.Dollar).Suffix("RETURNING id").SetMap(m).ToSql()
+	query, args, err := squirrel.Update(table).Where(squirrel.Eq{"id": SubCatID}).
+		PlaceholderFormat(squirrel.Dollar).Suffix("RETURNING id").SetMap(m).ToSql()
 	if err != nil {
 		return 0, err
 	}
@@ -109,7 +106,8 @@ func (c *SubcategoryStorage) Delete(ctx context.Context, SubCatID int) error {
 func (c *SubcategoryStorage) Get(ctx context.Context, SubCatID int) (map[string]interface{}, error) {
 	var cat Subcategory
 
-	query, args, err := squirrel.Select("title", "title_eng", "description", "user_id").Where(squirrel.Eq{"id": SubCatID}).PlaceholderFormat(squirrel.Dollar).ToSql()
+	query, args, err := squirrel.Select("title", "category_id").Where(squirrel.Eq{"id": SubCatID}).From(table).
+		PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
 		return nil, err
 	}
@@ -120,6 +118,7 @@ func (c *SubcategoryStorage) Get(ctx context.Context, SubCatID int) (map[string]
 		return nil, err
 	}
 
+	cat.ID = SubCatID
 	return cat.ToMap(), nil
 }
 
