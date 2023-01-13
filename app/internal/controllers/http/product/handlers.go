@@ -153,7 +153,7 @@ func (h *ProductHandler) CreateOne(w http.ResponseWriter, r *http.Request, param
 }
 
 func (h *ProductHandler) CreateMany(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	log.Println("Create Many")
+	w.Header().Add("Content-Type", "application/json")
 	var input CreateProductInput
 
 	UserID := r.Context().Value("user_id").(int)

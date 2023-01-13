@@ -41,6 +41,7 @@ func (h *SubcategoryHandler) Register(r *httprouter.Router) {
 }
 
 func (h *SubcategoryHandler) CreateSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	w.Header().Add("Content-Type", "application/json")
 	var input CreateSubcatInput
 
 	UserID := r.Context().Value("user_id").(int)
@@ -81,6 +82,7 @@ func (h *SubcategoryHandler) CreateSubcategory(w http.ResponseWriter, r *http.Re
 }
 
 func (h *SubcategoryHandler) UpdateSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	w.Header().Add("Content-Type", "application/json")
 	var input UpdateSubcatInput
 
 	UserID := r.Context().Value("user_id").(int)
@@ -119,6 +121,7 @@ func (h *SubcategoryHandler) UpdateSubcategory(w http.ResponseWriter, r *http.Re
 }
 
 func (h *SubcategoryHandler) DeleteSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	w.Header().Add("Content-Type", "application/json")
 	UserID := r.Context().Value("user_id").(int)
 
 	catID := params.ByName("cat_id")
@@ -144,7 +147,7 @@ func (h *SubcategoryHandler) DeleteSubcategory(w http.ResponseWriter, r *http.Re
 }
 
 func (h *SubcategoryHandler) GetSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	log.Println("Get Subcategory")
+	w.Header().Add("Content-Type", "application/json")
 	UserID := r.Context().Value("user_id").(int)
 
 	catID := params.ByName("cat_id")
@@ -165,7 +168,7 @@ func (h *SubcategoryHandler) GetSubcategory(w http.ResponseWriter, r *http.Reque
 		log.Println(err)
 		return
 	}
-	log.Println(cat)
+
 	products, err := h.ps.GetAll(r.Context(), UserID, CatID, SubCatID)
 	if err != nil {
 		log.Println(err)

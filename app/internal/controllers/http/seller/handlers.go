@@ -113,6 +113,7 @@ func (s *SellerHandler) UpdateData(w http.ResponseWriter, r *http.Request, _ htt
 }
 
 func (s *SellerHandler) GetInfo(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	w.Header().Add("Content-Type", "application/json")
 	UserID := r.Context().Value("user_id").(int)
 
 	info, err := s.s.GetInfo(r.Context(), UserID)
