@@ -79,12 +79,7 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request,
 
 func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	var upd UpdateCategoryInput
-	userID := fmt.Sprintf("%v", r.Context().Value("user_id"))
-	UserID, err := strconv.Atoi(userID)
-	if err != nil {
-		return
-	}
-
+	UserID := r.Context().Value("user_id").(int)
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
@@ -111,11 +106,7 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request,
 }
 
 func (h *CategoryHandler) DeleteCategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	userID := fmt.Sprintf("%v", r.Context().Value("user_id"))
-	UserID, err := strconv.Atoi(userID)
-	if err != nil {
-		return
-	}
+	UserID := r.Context().Value("user_id").(int)
 
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
@@ -134,11 +125,7 @@ func (h *CategoryHandler) DeleteCategory(w http.ResponseWriter, r *http.Request,
 }
 
 func (h *CategoryHandler) GetCategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	userID := fmt.Sprintf("%v", r.Context().Value("user_id"))
-	UserID, err := strconv.Atoi(userID)
-	if err != nil {
-		return
-	}
+	UserID := r.Context().Value("user_id").(int)
 
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
@@ -177,11 +164,7 @@ func (h *CategoryHandler) GetCategory(w http.ResponseWriter, r *http.Request, pa
 }
 
 func (h *CategoryHandler) GetAllCategory(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	userID := fmt.Sprintf("%v", r.Context().Value("user_id"))
-	UserID, err := strconv.Atoi(userID)
-	if err != nil {
-		return
-	}
+	UserID := r.Context().Value("user_id").(int)
 
 	cats, err := h.cat.GetAll(r.Context(), UserID)
 	if err != nil {
