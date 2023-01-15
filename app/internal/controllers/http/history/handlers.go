@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/julienschmidt/httprouter"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -33,6 +34,7 @@ func (h *HistoryHandler) GetHistory(w http.ResponseWriter, r *http.Request, _ ht
 
 	transactions, err := h.hs.GetAllTransactions(r.Context(), UserID)
 	if err != nil {
+		log.Println(err)
 		return
 	}
 
@@ -58,6 +60,7 @@ func (h *HistoryHandler) GetFullTransaction(w http.ResponseWriter, r *http.Reque
 
 	transaction, err := h.hs.GetOneTransaction(r.Context(), UserID, tranID)
 	if err != nil {
+		log.Println(err)
 		return
 	}
 

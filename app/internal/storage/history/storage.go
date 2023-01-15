@@ -19,9 +19,9 @@ func NewHistoryStorage(c *pgxpool.Pool) *HistoryStorage {
 
 func (h *HistoryStorage) GetAll(ctx context.Context, UserID int) (map[string]interface{}, error) {
 	var transacts AllTransactInput
-	var m map[string]interface{}
+	m := make(map[string]interface{})
 	query, args, err := squirrel.
-		Select("id", "category_name", "subcategory", "unique_code",
+		Select("id", "category_name", "subcategory_name", "unique_code",
 			"content_key", "state", "amount_usd", "date_check").
 		From(table).Where(squirrel.Eq{"user_id": UserID}).
 		PlaceholderFormat(squirrel.Dollar).ToSql()
@@ -53,9 +53,8 @@ func (h *HistoryStorage) GetAll(ctx context.Context, UserID int) (map[string]int
 // GetOne TODO Need testing
 func (h *HistoryStorage) GetOne(ctx context.Context, UserID, TransactID int) (map[string]interface{}, error) {
 	var transtact Transaction
-	var m map[string]interface{}
 	query, args, err := squirrel.
-		Select("category_name", "subcategory", "unique_code",
+		Select("category_name", "subcategory_name", "unique_code",
 			"client_email", "amount", "profit", "count",
 			"unique_inv", "date_delivery", "date_confirmed",
 			"content_key", "state", "amount_usd", "date_check").
@@ -75,15 +74,16 @@ func (h *HistoryStorage) GetOne(ctx context.Context, UserID, TransactID int) (ma
 		logrus.Debugf("error scanning: %v", err)
 		return nil, err
 	}
+	transtact.UserID = UserID
 	var mm = make(map[string]interface{})
-	mm["transaction"] = m
+	mm["transaction"] = transtact.ToMap()
 	return mm, nil
 }
 func (h *HistoryStorage) GetOneByUniqueCode(ctx context.Context, UniqueCode string) (map[string]interface{}, error) {
 	var transtact Transaction
 	var m map[string]interface{}
 	query, args, err := squirrel.
-		Select("id", "category_name", "subcategory",
+		Select("id", "category_name", "subcategory_name",
 			"client_email", "amount", "profit", "count",
 			"unique_inv", "date_delivery", "date_confirmed",
 			"content_key", "state", "amount_usd", "date_check").

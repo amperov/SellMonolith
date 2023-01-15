@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/sirupsen/logrus"
 	"log"
 )
 
@@ -135,6 +136,7 @@ func (c *SubcategoryStorage) GetID(ctx context.Context, SubcategoryName string, 
 
 	err = row.Scan(&id)
 	if err != nil {
+		logrus.Debugf("Subcat error: %v", err)
 		return 0, err
 	}
 	return id, nil

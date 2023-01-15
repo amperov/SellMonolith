@@ -10,7 +10,7 @@ type ProdForClient struct {
 }
 
 func (c *ProdForClient) ToMap() map[string]interface{} {
-	var m map[string]interface{}
+	m := make(map[string]interface{})
 
 	m["id"] = c.ID
 	m["content"] = c.Content

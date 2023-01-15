@@ -8,7 +8,7 @@ import (
 )
 
 type ClientService interface {
-	Get(ctx context.Context, UniqueCode string, Username string) (map[string]interface{}, error)
+	Get(ctx context.Context, UniqueCode string, Username string) ([]map[string]interface{}, error)
 }
 
 type ClientHandlers struct {

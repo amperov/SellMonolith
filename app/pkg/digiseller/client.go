@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -17,16 +18,16 @@ import (
 )
 
 type Body struct {
-	SellerID  int
-	Timestamp int64
-	Sign      string
+	SellerID  int    `json:"seller_id,omitempty"`
+	Timestamp int64  `json:"timestamp,omitempty"`
+	Sign      string `json:"sign,omitempty"`
 }
 
 type Resp struct {
 	Retval   int    `json:"retval,omitempty"`
 	Token    string `json:"token,omitempty"`
 	SellerID int    `json:"seller_id,omitempty"`
-	Valid    string `json:"valid,omitempty"`
+	Valid    string `json:"valid_thru,omitempty"`
 }
 
 type SellerStore interface {
@@ -35,7 +36,7 @@ type SellerStore interface {
 }
 
 type CategoryStore interface {
-	GetID(ctx context.Context, CategoryName string) (int, error)
+	GetID(ctx context.Context, CategoryName string) (int, int, error)
 }
 
 type HistoryStore interface {
@@ -47,6 +48,7 @@ type SubcategoryStore interface {
 type ProductStore interface {
 	GetSomeProducts(ctx context.Context, SubcatID int, Count int) ([]map[string]interface{}, error)
 	DeleteOne(ctx context.Context, ProdID int) error
+	SearchByUniqueCode(ctx context.Context, UniqueCode string) ([]map[string]interface{}, bool)
 }
 
 type DigiClient struct {
@@ -102,6 +104,7 @@ func (c *DigiClient) Auth(ctx context.Context, Username string) string {
 		logrus.Debugf("unmarshal error: %v", err)
 		return ""
 	}
+	log.Printf("%+v", respStr)
 	return respStr.Token
 }
 
@@ -111,40 +114,32 @@ func (c *DigiClient) GetProducts(ctx context.Context, UniqueCode, Token string) 
 
 	resp, err := http.Get(fmt.Sprintf("https://api.digiseller.ru/api/purchases/unique-code/%s?token=%s", UniqueCode, Token))
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
+		log.Print(err)
 		return nil, err
 	}
 
 	err = json.Unmarshal(bodyBytes, &input)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 
-	CatID, err := c.c.GetID(ctx, input.Options[0].Name)
+	CatID, UserID, err := c.c.GetID(ctx, input.Options[0].Name)
 	if err != nil {
+		log.Println("Cat error: ", err)
 		return nil, err
 	}
 
 	SubcatID, err := c.ss.GetID(ctx, input.Options[0].Value, CatID)
 	if err != nil {
+		log.Println("Subcat error: ", err)
 		return nil, err
-	}
-
-	products, err := c.p.GetSomeProducts(ctx, SubcatID, input.CntGoods)
-	if err != nil {
-		return nil, err
-	}
-
-	for i := 0; i < len(products); i++ {
-		prod := products[i]
-		err := c.p.DeleteOne(ctx, prod["id"].(int))
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	tran.UniqueInv = input.Inv
@@ -152,14 +147,29 @@ func (c *DigiClient) GetProducts(ctx context.Context, UniqueCode, Token string) 
 	tran.UniqueCode.DateConfirmed = input.UniqueCodeState.DateConfirmed
 	tran.UniqueCode.DateDelivery = input.UniqueCodeState.DateDelivery
 	tran.UniqueCode.DateCheck = input.UniqueCodeState.DateCheck
-	tran.CountGoods = input.CntGoods
+	tran.CountGoods = int(input.CntGoods)
 	tran.Amount = int(input.Amount)
 	tran.AmountUSD = int(input.AmountUsd)
 	tran.Category = input.Options[0].Name
 	tran.Subcategory = input.Options[0].Value
 	tran.ClientEmail = input.Email
-	tran.Profit, err = strconv.Atoi(input.Profit)
+	tran.Profit = input.Profit
+	tran.UserID = UserID
 
+	products, err := c.p.GetSomeProducts(ctx, SubcatID, int(input.CntGoods))
+	if err != nil {
+		log.Println("Prod error: ", err)
+		return nil, err
+	}
+
+	for i := 0; i < len(products); i++ {
+		prod := products[i]
+		err := c.p.DeleteOne(ctx, prod["id"].(int))
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+	}
 	var contents []string
 
 	for i := 0; i < len(products); i++ {
@@ -170,8 +180,8 @@ func (c *DigiClient) GetProducts(ctx context.Context, UniqueCode, Token string) 
 
 	err = c.s.SetTransaction(ctx, tran.ToMap())
 	if err != nil {
+		log.Printf("Tran Err: %+v", err)
 		return nil, err
 	}
-
 	return products, nil
 }

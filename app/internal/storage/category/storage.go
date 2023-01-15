@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/sirupsen/logrus"
 	"log"
 )
 
@@ -17,20 +18,22 @@ func NewCategoryStorage(c *pgxpool.Pool) *CategoryStorage {
 	return &CategoryStorage{c: c}
 }
 
-func (c *CategoryStorage) GetID(ctx context.Context, CategoryName string) (int, error) {
+func (c *CategoryStorage) GetID(ctx context.Context, CategoryName string) (int, int, error) {
 	var id int
-	query, args, err := squirrel.Select("id").From(table).Where(squirrel.Eq{"title": CategoryName}).PlaceholderFormat(squirrel.Dollar).ToSql()
+	var UserID int
+	query, args, err := squirrel.Select("id", "user_id").From(table).Where(squirrel.Eq{"title_ru": CategoryName}).PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
 	row := c.c.QueryRow(ctx, query, args...)
 
-	err = row.Scan(&id)
+	err = row.Scan(&id, &UserID)
 	if err != nil {
-		return 0, err
+		logrus.Debugf("Cat error: %v", err)
+		return 0, 0, err
 	}
-	return id, nil
+	return id, UserID, nil
 }
 
 func (c *CategoryStorage) Create(ctx context.Context, m map[string]interface{}) (int, error) {

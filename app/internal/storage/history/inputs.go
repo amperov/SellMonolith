@@ -51,7 +51,7 @@ type UniqueCode struct {
 }
 
 func (t *Transaction) ToMap() map[string]interface{} {
-	var m map[string]interface{}
+	m := make(map[string]interface{})
 	m["id"] = t.ID
 	m["category_name"] = t.Category
 	m["subcategory"] = t.Subcategory

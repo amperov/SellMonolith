@@ -35,6 +35,7 @@ func (h *ProductHandler) Register(r *httprouter.Router) {
 }
 
 func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	w.Header().Add("Content-Type", "application/json")
 	var input UpdateProductInput
 
 	UserID := r.Context().Value("user_id").(int)
@@ -81,6 +82,7 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request, p
 }
 
 func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	w.Header().Add("Content-Type", "application/json")
 	UserID := r.Context().Value("user_id").(int)
 
 	catID := params.ByName("cat_id")
@@ -112,7 +114,7 @@ func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request, p
 }
 
 func (h *ProductHandler) CreateOne(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	log.Println("Create One Product Handler")
+	w.Header().Add("Content-Type", "application/json")
 	var input CreateProductInput
 
 	UserID := r.Context().Value("user_id").(int)

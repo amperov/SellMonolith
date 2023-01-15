@@ -34,10 +34,10 @@ func NewSubcategoryHandler(ware auth.MiddleWare, sc SubcatService, ps ProductSer
 }
 
 func (h *SubcategoryHandler) Register(r *httprouter.Router) {
-	r.GET("/seller/category/:cat_id/subcategory/:subcat_id", h.ware.IsAuth(h.GetSubcategory))
-	r.POST("/seller/category/:cat_id", h.ware.IsAuth(h.CreateSubcategory))
-	r.PATCH("/seller/category/:cat_id/subcategory/:subcat_id", h.ware.IsAuth(h.UpdateSubcategory))
-	r.DELETE("/seller/category/:cat_id/subcategory/:subcat_id", h.ware.IsAuth(h.DeleteSubcategory))
+	r.GET("/api/seller/category/:cat_id/subcategory/:subcat_id", h.ware.IsAuth(h.GetSubcategory))
+	r.POST("/api/seller/category/:cat_id", h.ware.IsAuth(h.CreateSubcategory))
+	r.PATCH("/api/seller/category/:cat_id/subcategory/:subcat_id", h.ware.IsAuth(h.UpdateSubcategory))
+	r.DELETE("/api/seller/category/:cat_id/subcategory/:subcat_id", h.ware.IsAuth(h.DeleteSubcategory))
 }
 
 func (h *SubcategoryHandler) CreateSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {

@@ -21,29 +21,32 @@ var (
 	transactionTable = "transactions"
 )
 
-func (p *ProductStorage) SearchByUniqueCode(ctx context.Context, UniqueCode string) (map[string]interface{}, bool) {
+func (p *ProductStorage) SearchByUniqueCode(ctx context.Context, UniqueCode string) ([]map[string]interface{}, bool) {
 	var input ProdForClient
-	var m map[string]interface{}
+
 	var arrayMap []map[string]interface{}
 
-	query, args, err := squirrel.Select("id", "content", "category", "subcategory", "date_check").From(transactionTable).
+	query, args, err := squirrel.Select("id", "content_key", "category_name", "subcategory_name", "date_check").From(transactionTable).
 		Where(squirrel.Eq{"unique_code": UniqueCode}).PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
 		return nil, false
 	}
 	rows, err := p.c.Query(ctx, query, args...)
 	if err != nil {
+		log.Println(err)
 		return nil, false
 	}
 	for rows.Next() {
 		err = rows.Scan(&input.ID, &input.Content, &input.Category, &input.Subcategory, &input.DateCheck)
 		if err != nil {
+			log.Println(err)
 			continue
 		}
+		log.Printf("TransactID: %v", input.ID)
 		arrayMap = append(arrayMap, input.ToMap())
 	}
-	m["products"] = arrayMap
-	return m, true
+
+	return arrayMap, true
 }
 
 func (p *ProductStorage) Create(ctx context.Context, m map[string]interface{}) (int, error) {
@@ -132,7 +135,8 @@ func (p *ProductStorage) GetCount(ctx context.Context, SubCatID int) (int, error
 func (p *ProductStorage) GetSomeProducts(ctx context.Context, SubcatID int, Count int) ([]map[string]interface{}, error) {
 	var m []map[string]interface{}
 	var i ProdForClient
-	query, args, err := squirrel.Select("id", "content_key").PlaceholderFormat(squirrel.Dollar).
+
+	query, args, err := squirrel.Select("content_key", "id").PlaceholderFormat(squirrel.Dollar).From(prodTable).
 		Where(squirrel.Eq{"subcategory_id": SubcatID}).Suffix(fmt.Sprintf("LIMIT %d", Count)).ToSql()
 	if err != nil {
 		return nil, err
@@ -144,7 +148,7 @@ func (p *ProductStorage) GetSomeProducts(ctx context.Context, SubcatID int, Coun
 	}
 
 	for rows.Next() {
-		err := rows.Scan(&i.ID, &i.Content)
+		err := rows.Scan(&i.Content, &i.ID)
 		if err != nil {
 			return nil, err
 		}

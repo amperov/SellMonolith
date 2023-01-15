@@ -10,7 +10,7 @@ type Transaction struct {
 	ClientEmail string     `json:"client_email,omitempty"`
 	DateCheck   string     `json:"date_check,omitempty"`
 	Content     string     `json:"content,omitempty"`
-	Profit      int        `json:"profit,omitempty"`
+	Profit      float64    `json:"profit,omitempty"`
 	Amount      int        `json:"amount,omitempty"`
 	AmountUSD   int        `json:"amount_usd,omitempty"`
 	CountGoods  int        `json:"count_goods,omitempty"`
@@ -27,10 +27,9 @@ type UniqueCode struct {
 }
 
 func (t *Transaction) ToMap() map[string]interface{} {
-	var m map[string]interface{}
-	m["id"] = t.ID
+	m := make(map[string]interface{})
 	m["category_name"] = t.Category
-	m["subcategory"] = t.Subcategory
+	m["subcategory_name"] = t.Subcategory
 	m["client_email"] = t.ClientEmail
 	m["content_key"] = t.Content
 	m["amount"] = t.Amount

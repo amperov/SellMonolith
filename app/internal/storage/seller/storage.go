@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"log"
 )
 
 var (
@@ -61,6 +62,7 @@ func (s *SellerStorage) SetTransaction(ctx context.Context, model map[string]int
 
 	_, err = s.c.Exec(ctx, query, args...)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 

@@ -10,7 +10,7 @@ type ClientDigi interface {
 }
 
 type ProductStore interface {
-	SearchByUniqueCode(ctx context.Context, UniqueCode string) (map[string]interface{}, bool)
+	SearchByUniqueCode(ctx context.Context, UniqueCode string) ([]map[string]interface{}, bool)
 }
 
 type ClientService struct {
@@ -22,18 +22,16 @@ func NewClientService(c ClientDigi, p ProductStore) *ClientService {
 	return &ClientService{c: c, p: p}
 }
 
-func (c *ClientService) Get(ctx context.Context, UniqueCode string, Username string) (map[string]interface{}, error) {
+func (c *ClientService) Get(ctx context.Context, UniqueCode string, Username string) ([]map[string]interface{}, error) {
 	prods, ok := c.p.SearchByUniqueCode(ctx, UniqueCode)
-	if !ok {
-		var m map[string]interface{}
+	if ok == false {
 		token := c.c.Auth(ctx, Username)
 		get, err := c.c.GetProducts(ctx, UniqueCode, token)
 
-		m["products"] = get
 		if err != nil {
 			return nil, err
 		}
-		return m, nil
+		return get, nil
 	}
 
 	return prods, nil
