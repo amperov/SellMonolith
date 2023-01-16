@@ -54,6 +54,9 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request,
 	var input CreateCategoryInput
 	UserID := r.Context().Value("user_id").(int)
 
+	if UserID == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Println(err)
