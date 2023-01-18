@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
+	"io"
+	"log"
 	"net/http"
 )
 
@@ -22,6 +24,8 @@ func NewClientHandlers(c ClientService) *ClientHandlers {
 
 func (h *ClientHandlers) Register(r *httprouter.Router) {
 	r.GET("/api/client/:username", h.GetProducts)
+	r.POST("/api/precheck", h.PreCheck)
+
 }
 
 func (h *ClientHandlers) GetProducts(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
@@ -49,4 +53,13 @@ func (h *ClientHandlers) GetProducts(w http.ResponseWriter, r *http.Request, par
 		return
 	}
 
+}
+
+func (h *ClientHandlers) PreCheck(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+	all, err := io.ReadAll(request.Body)
+	if err != nil {
+		return
+	}
+	log.Println(string(all))
+	writer.Write([]byte(`"error": "endpoint not completed"`))
 }
