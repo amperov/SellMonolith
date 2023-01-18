@@ -49,18 +49,21 @@ func (h *SubcategoryHandler) CreateSubcategory(w http.ResponseWriter, r *http.Re
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
+		w.WriteHeader(400)
 		log.Println(err)
 		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		w.WriteHeader(400)
 		log.Println(err)
 		return
 	}
 
 	err = json.Unmarshal(body, &input)
 	if err != nil {
+		w.WriteHeader(400)
 		log.Println(err)
 		return
 	}
@@ -69,16 +72,18 @@ func (h *SubcategoryHandler) CreateSubcategory(w http.ResponseWriter, r *http.Re
 
 	id, err := h.sc.Create(r.Context(), input.ToMap(), UserID, CatID)
 	if err != nil {
+		w.WriteHeader(500)
 		log.Println(err)
 		return
 	}
 
 	_, err = w.Write([]byte(fmt.Sprintf(`{"success" : "subcategory with ID %d created"}`, id)))
 	if err != nil {
+		w.WriteHeader(500)
 		log.Println(err)
 		return
 	}
-
+	w.WriteHeader(201)
 }
 
 func (h *SubcategoryHandler) UpdateSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
@@ -89,17 +94,20 @@ func (h *SubcategoryHandler) UpdateSubcategory(w http.ResponseWriter, r *http.Re
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
+		w.WriteHeader(400)
 		return
 	}
 
 	subcatID := params.ByName("subcat_id")
 	SubCatID, err := strconv.Atoi(subcatID)
 	if err != nil {
+		w.WriteHeader(400)
 		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		w.WriteHeader(400)
 		return
 	}
 
@@ -110,6 +118,7 @@ func (h *SubcategoryHandler) UpdateSubcategory(w http.ResponseWriter, r *http.Re
 	input.CatID = CatID
 	id, err := h.sc.Update(r.Context(), input.ToMap(), UserID, CatID, SubCatID)
 	if err != nil {
+		w.WriteHeader(500)
 		log.Println(err)
 		return
 	}
@@ -118,6 +127,7 @@ func (h *SubcategoryHandler) UpdateSubcategory(w http.ResponseWriter, r *http.Re
 	if err != nil {
 		return
 	}
+	w.WriteHeader(200)
 }
 
 func (h *SubcategoryHandler) DeleteSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
@@ -127,23 +137,28 @@ func (h *SubcategoryHandler) DeleteSubcategory(w http.ResponseWriter, r *http.Re
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
+		w.WriteHeader(400)
 		return
 	}
 	subcatID := params.ByName("subcat_id")
 	SubCatID, err := strconv.Atoi(subcatID)
 	if err != nil {
+		w.WriteHeader(400)
 		return
 	}
 
 	err = h.sc.Delete(r.Context(), UserID, CatID, SubCatID)
 	if err != nil {
+		w.WriteHeader(500)
 		return
 	}
 
 	_, err = w.Write([]byte(fmt.Sprintf(`{"success" : "subcategory deleted"}`)))
 	if err != nil {
+		w.WriteHeader(500)
 		return
 	}
+	w.WriteHeader(200)
 }
 
 func (h *SubcategoryHandler) GetSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
@@ -153,6 +168,8 @@ func (h *SubcategoryHandler) GetSubcategory(w http.ResponseWriter, r *http.Reque
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
+		w.WriteHeader(400)
 		log.Println(catID)
 		return
 	}
@@ -160,17 +177,23 @@ func (h *SubcategoryHandler) GetSubcategory(w http.ResponseWriter, r *http.Reque
 	subcatID := params.ByName("subcat_id")
 	SubCatID, err := strconv.Atoi(subcatID)
 	if err != nil {
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
+		w.WriteHeader(400)
 		log.Println(err)
 		return
 	}
 	cat, err := h.sc.Get(r.Context(), UserID, CatID, SubCatID)
 	if err != nil {
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
+		w.WriteHeader(500)
 		log.Println(err)
 		return
 	}
 
 	products, err := h.ps.GetAll(r.Context(), UserID, CatID, SubCatID)
 	if err != nil {
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
+		w.WriteHeader(500)
 		log.Println(err)
 	}
 
@@ -178,10 +201,14 @@ func (h *SubcategoryHandler) GetSubcategory(w http.ResponseWriter, r *http.Reque
 
 	catMarshalled, err := json.Marshal(cat)
 	if err != nil {
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
+		w.WriteHeader(500)
 		return
 	}
 	_, err = w.Write(catMarshalled)
 	if err != nil {
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
+		w.WriteHeader(500)
 		return
 	}
 }

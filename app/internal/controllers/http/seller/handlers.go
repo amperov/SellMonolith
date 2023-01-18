@@ -4,6 +4,7 @@ import (
 	"Selling/app/pkg/auth"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"io"
@@ -32,6 +33,7 @@ func (s *SellerHandler) Register(r *httprouter.Router) {
 	r.POST("/api/auth/sign-up", s.CreateUser)
 	r.PATCH("/api/seller/update", s.ware.IsAuth(s.UpdateData))
 	r.GET("/api/seller/info", s.ware.IsAuth(s.GetInfo))
+	r.GET("api/seller/me", s.ware.IsAuth(s.IsAuth))
 }
 
 func (s *SellerHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -40,11 +42,15 @@ func (s *SellerHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ htt
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
+		w.WriteHeader(http.StatusBadRequest)
 		log.Println(err)
 		return
 	}
 	err = json.Unmarshal(body, &input)
 	if err != nil {
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
+		w.WriteHeader(http.StatusBadRequest)
 		log.Println(err)
 		return
 	}
@@ -52,16 +58,20 @@ func (s *SellerHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ htt
 	log.Println(input.ToMap())
 	id, err := s.s.SignUp(r.Context(), input.ToMap())
 	if err != nil {
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
+		w.WriteHeader(http.StatusInternalServerError)
 		log.Println(err)
 		return
 	}
 
 	_, err = w.Write([]byte(fmt.Sprintf(`{"success": "user with ID %d created"}`, id)))
 	if err != nil {
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
+		w.WriteHeader(http.StatusInternalServerError)
 		log.Println(err)
 		return
 	}
-
+	w.WriteHeader(201)
 }
 
 func (s *SellerHandler) AuthUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -70,17 +80,23 @@ func (s *SellerHandler) AuthUser(w http.ResponseWriter, r *http.Request, _ httpr
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
+		w.WriteHeader(http.StatusBadRequest)
 		log.Println(err)
 		return
 	}
 
 	err = json.Unmarshal(body, &input)
 	if err != nil {
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
+		w.WriteHeader(http.StatusBadRequest)
 		log.Println(err)
 		return
 	}
 	token, err := s.s.SignIn(r.Context(), input.ToMap())
 	if err != nil {
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
+		w.WriteHeader(http.StatusInternalServerError)
 		log.Println(err)
 		return
 	}
@@ -95,17 +111,23 @@ func (s *SellerHandler) UpdateData(w http.ResponseWriter, r *http.Request, _ htt
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	err = json.Unmarshal(body, &upd)
 	if err != nil {
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	log.Println(upd.ToMap())
 	err = s.s.UpdateData(r.Context(), upd.ToMap(), UserID)
 	if err != nil {
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
+		w.WriteHeader(http.StatusInternalServerError)
 		log.Println(err)
 		return
 	}
@@ -118,12 +140,28 @@ func (s *SellerHandler) GetInfo(w http.ResponseWriter, r *http.Request, _ httpro
 
 	info, err := s.s.GetInfo(r.Context(), UserID)
 	if err != nil {
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
+		w.WriteHeader(500)
 		return
 	}
 
 	marshal, err := json.Marshal(info)
 	if err != nil {
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	w.Write(marshal)
+}
+
+func (s *SellerHandler) IsAuth(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	w.Header().Add("Content-Type", "application/json")
+
+	UserID := r.Context().Value("user_id").(int)
+	if UserID == 0 {
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, errors.New("invalid token"))))
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	w.WriteHeader(200)
 }

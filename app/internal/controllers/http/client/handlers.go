@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
@@ -29,16 +30,22 @@ func (h *ClientHandlers) GetProducts(w http.ResponseWriter, r *http.Request, par
 
 	prods, err := h.c.Get(r.Context(), uniqueCode, name)
 	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
 
 	prodsMarshalled, err := json.Marshal(prods)
 	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
 
 	_, err = w.Write(prodsMarshalled)
 	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
 

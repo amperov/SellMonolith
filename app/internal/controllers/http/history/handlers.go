@@ -4,6 +4,7 @@ import (
 	"Selling/app/pkg/auth"
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
@@ -34,17 +35,23 @@ func (h *HistoryHandler) GetHistory(w http.ResponseWriter, r *http.Request, _ ht
 
 	transactions, err := h.hs.GetAllTransactions(r.Context(), UserID)
 	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		log.Println(err)
 		return
 	}
 
 	transactionsMarshalled, err := json.Marshal(transactions)
 	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
 
 	_, err = w.Write(transactionsMarshalled)
 	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
 }
@@ -55,22 +62,29 @@ func (h *HistoryHandler) GetFullTransaction(w http.ResponseWriter, r *http.Reque
 	tran_id := params.ByName("tran_id")
 	tranID, err := strconv.Atoi(tran_id)
 	if err != nil {
+		w.WriteHeader(400)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
 
 	transaction, err := h.hs.GetOneTransaction(r.Context(), UserID, tranID)
 	if err != nil {
-		log.Println(err)
+		w.WriteHeader(500)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
 
 	marshal, err := json.Marshal(transaction)
 	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
 
 	_, err = w.Write(marshal)
 	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
 }

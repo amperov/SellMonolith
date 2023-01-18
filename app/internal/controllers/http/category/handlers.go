@@ -59,12 +59,16 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request,
 	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		w.WriteHeader(400)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		log.Println(err)
 		return
 	}
 
 	err = json.Unmarshal(body, &input)
 	if err != nil {
+		w.WriteHeader(400)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		log.Println(err)
 		return
 	}
@@ -75,6 +79,8 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request,
 
 	_, err = w.Write([]byte(fmt.Sprintf(`{"success" : "category with ID %d created"}`, id)))
 	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		log.Println(err)
 		return
 	}
@@ -83,19 +89,26 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request,
 func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	var upd UpdateCategoryInput
 	UserID := r.Context().Value("user_id").(int)
+
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
+		w.WriteHeader(400)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		w.WriteHeader(400)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
 
 	err = json.Unmarshal(body, &upd)
 	if err != nil {
+		w.WriteHeader(400)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
 
@@ -103,6 +116,8 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request,
 
 	_, err = w.Write([]byte(fmt.Sprintf(`{"success" : "category with ID %d updated"}`, id)))
 	if err != nil {
+		w.WriteHeader(400)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
 
@@ -114,15 +129,22 @@ func (h *CategoryHandler) DeleteCategory(w http.ResponseWriter, r *http.Request,
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
+		w.WriteHeader(400)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
+
 	err = h.cat.Delete(r.Context(), UserID, CatID)
 	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
 
 	_, err = w.Write([]byte(fmt.Sprintf(`{"success" : "category with deleted"}`)))
 	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
 }
@@ -133,20 +155,28 @@ func (h *CategoryHandler) GetCategory(w http.ResponseWriter, r *http.Request, pa
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
+		w.WriteHeader(400)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
 
 	cat, err := h.cat.GetOne(r.Context(), UserID, CatID)
 	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
+
 	subcategories, err := h.sc.GetAll(r.Context(), UserID, CatID)
 	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		log.Println(err)
 	}
 	for _, subcategory := range subcategories {
 		count, err := h.ps.GetCount(r.Context(), UserID, CatID, subcategory["id"].(int))
 		if err != nil {
+
 			logrus.Println(err)
 			return
 		}
@@ -157,11 +187,15 @@ func (h *CategoryHandler) GetCategory(w http.ResponseWriter, r *http.Request, pa
 
 	catMarshalled, err := json.Marshal(cat)
 	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
 
 	_, err = w.Write(catMarshalled)
 	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
 }
@@ -171,10 +205,11 @@ func (h *CategoryHandler) GetAllCategory(w http.ResponseWriter, r *http.Request,
 
 	cats, err := h.cat.GetAll(r.Context(), UserID)
 	if err != nil {
+		w.WriteHeader(400)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
 	}
 
-	log.Printf("%v", cats)
 	for _, cat := range cats {
 		log.Println(cat)
 		count, err := h.sc.GetCount(r.Context(), UserID, cat["id"].(int))
@@ -191,6 +226,8 @@ func (h *CategoryHandler) GetAllCategory(w http.ResponseWriter, r *http.Request,
 	}
 	_, err = w.Write(catsMarshalled)
 	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		log.Println(err)
 		return
 	}
