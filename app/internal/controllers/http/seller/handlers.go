@@ -33,7 +33,7 @@ func (s *SellerHandler) Register(r *httprouter.Router) {
 	r.POST("/api/auth/sign-up", s.CreateUser)
 	r.PATCH("/api/seller/update", s.ware.IsAuth(s.UpdateData))
 	r.GET("/api/seller/info", s.ware.IsAuth(s.GetInfo))
-	r.GET("api/seller/me", s.ware.IsAuth(s.IsAuth))
+	r.GET("/api/seller/me", s.ware.IsAuth(s.IsAuth))
 }
 
 func (s *SellerHandler) CreateUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
