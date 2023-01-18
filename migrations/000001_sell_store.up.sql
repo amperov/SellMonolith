@@ -18,6 +18,7 @@ CREATE TABLE category(
 CREATE TABLE subcategory (
     id serial primary key ,
     title text not null unique ,
+    subitem_id int,
     category_id int references category (id)
 );
 CREATE TABLE products (

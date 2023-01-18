@@ -43,18 +43,18 @@ func main() {
 	}
 
 	options := cors.Options{
-		AllowedOrigins:         []string{"http://localhost:3000", "http://185.185.68.187", "https://keys-store.online"},
+		AllowedOrigins:         []string{"http://localhost:3000", "http://185.185.68.187", "https://keys-store.online", "*"},
 		AllowOriginFunc:        nil,
 		AllowOriginRequestFunc: nil,
 		AllowedMethods:         []string{"POST", "PATCH", "GET", "DELETE"},
-		AllowedHeaders:         []string{"Access-Control-Allow-Origin", "Authorization"},
+		AllowedHeaders:         []string{"Access-Control-Allow-Origin", "Authorization", "Content-Type"},
 		ExposedHeaders:         nil,
 		MaxAge:                 0,
 		AllowCredentials:       true,
 		AllowPrivateNetwork:    false,
 		OptionsPassthrough:     false,
 		OptionsSuccessStatus:   0,
-		Debug:                  false,
+		Debug:                  true,
 	}
 	c := cors.New(options)
 	handler := c.Handler(router)
