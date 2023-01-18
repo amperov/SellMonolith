@@ -57,16 +57,14 @@ func (h *ClientHandlers) GetProducts(w http.ResponseWriter, r *http.Request, par
 
 }
 
-type Precheck struct {
-	Request struct {
-		Product struct {
-			ID int `json:"id"`
-		} `json:"product"`
-	} `json:"request"`
+type Request struct {
+	Product struct {
+		ID int `xml:"id"`
+	} `xml:"product"`
 }
 
 func (h *ClientHandlers) PreCheck(w http.ResponseWriter, request *http.Request, params httprouter.Params) {
-	var input Precheck
+	var input Request
 
 	all, err := io.ReadAll(request.Body)
 	if err != nil {
@@ -81,7 +79,7 @@ func (h *ClientHandlers) PreCheck(w http.ResponseWriter, request *http.Request, 
 	}
 
 	log.Println(input)
-	check, err := h.c.Check(request.Context(), input.Request.Product.ID)
+	check, err := h.c.Check(request.Context(), input.Product.ID)
 	if err != nil {
 		return
 	}
@@ -91,7 +89,7 @@ func (h *ClientHandlers) PreCheck(w http.ResponseWriter, request *http.Request, 
 		return
 	}
 	if check == true {
-		log.Println("Request for search key: ", input.Request.Product.ID)
+		log.Println("Request for search key: ", input.Product.ID)
 		w.WriteHeader(200)
 	}
 }
