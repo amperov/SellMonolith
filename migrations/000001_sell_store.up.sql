@@ -11,6 +11,7 @@ CREATE TABLE category(
     id serial primary key ,
     title_ru text unique not null ,
     title_eng text,
+    item_id int,
     description text,
     user_id int references sellers (id)
 );

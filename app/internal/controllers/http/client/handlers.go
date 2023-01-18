@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"io"
@@ -12,6 +13,7 @@ import (
 
 type ClientService interface {
 	Get(ctx context.Context, UniqueCode string, Username string) ([]map[string]interface{}, error)
+	Check(ctx context.Context, ItemID int) (bool, error)
 }
 
 type ClientHandlers struct {
@@ -55,11 +57,41 @@ func (h *ClientHandlers) GetProducts(w http.ResponseWriter, r *http.Request, par
 
 }
 
-func (h *ClientHandlers) PreCheck(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+type Precheck struct {
+	Request struct {
+		Product struct {
+			ID int `json:"id"`
+		} `json:"product"`
+	} `json:"request"`
+}
+
+func (h *ClientHandlers) PreCheck(w http.ResponseWriter, request *http.Request, params httprouter.Params) {
+	var input Precheck
+
 	all, err := io.ReadAll(request.Body)
 	if err != nil {
 		return
 	}
+
 	log.Println(string(all))
-	writer.Write([]byte(`"error": "endpoint not completed"`))
+
+	err = xml.Unmarshal(all, &input)
+	if err != nil {
+		return
+	}
+
+	log.Println(input)
+	check, err := h.c.Check(request.Context(), input.Request.Product.ID)
+	if err != nil {
+		return
+	}
+	if check == false {
+		w.WriteHeader(400)
+		w.Write([]byte(`"error": "we haven't this products"`))
+		return
+	}
+	if check == true {
+		log.Println("Request for search key: ", input.Request.Product.ID)
+		w.WriteHeader(200)
+	}
 }

@@ -171,3 +171,17 @@ func (p *ProductStorage) DeleteOne(ctx context.Context, ProdID int) error {
 	}
 	return nil
 }
+func (p *ProductStorage) Check(ctx context.Context, ItemID int) (bool, error) {
+	var exists bool
+	query, args, err := squirrel.Select("id").Prefix("SELECT EXISTS(").Suffix(")").PlaceholderFormat(squirrel.Dollar).Where(squirrel.Eq{"item_id": ItemID}).ToSql()
+	if err != nil {
+		return false, err
+	}
+
+	row := p.c.QueryRow(ctx, query, args...)
+	err = row.Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
+}

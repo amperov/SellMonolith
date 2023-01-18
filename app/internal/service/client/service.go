@@ -10,12 +10,17 @@ type ClientDigi interface {
 }
 
 type ProductStore interface {
+	Check(ctx context.Context, ItemID int) (bool, error)
 	SearchByUniqueCode(ctx context.Context, UniqueCode string) ([]map[string]interface{}, bool)
 }
 
 type ClientService struct {
 	c ClientDigi
 	p ProductStore
+}
+
+func (c *ClientService) Check(ctx context.Context, ItemID int) (bool, error) {
+	return c.p.Check(ctx, ItemID)
 }
 
 func NewClientService(c ClientDigi, p ProductStore) *ClientService {
