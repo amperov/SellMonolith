@@ -24,6 +24,7 @@ import (
 	"Selling/app/pkg/server"
 	"context"
 	"github.com/julienschmidt/httprouter"
+	"github.com/rs/cors"
 	"github.com/spf13/viper"
 	"log"
 )
@@ -40,6 +41,23 @@ func main() {
 		log.Println(err)
 		return
 	}
+
+	options := cors.Options{
+		AllowedOrigins:         []string{"http://localhost:3000", "http://185.185.68.187", "https://keys-store.online"},
+		AllowOriginFunc:        nil,
+		AllowOriginRequestFunc: nil,
+		AllowedMethods:         []string{"POST", "PATCH", "GET", "DELETE"},
+		AllowedHeaders:         []string{"Access-Control-Allow-Origin", "Authorization"},
+		ExposedHeaders:         nil,
+		MaxAge:                 0,
+		AllowCredentials:       true,
+		AllowPrivateNetwork:    false,
+		OptionsPassthrough:     false,
+		OptionsSuccessStatus:   0,
+		Debug:                  false,
+	}
+	c := cors.New(options)
+	handler := c.Handler(router)
 
 	cfg, err := db.InitPGConfig()
 	if err != nil {
@@ -81,7 +99,7 @@ func main() {
 	clientHandler.Register(router)
 
 	srv := server.NewServer()
-	err = srv.Run(router)
+	err = srv.Run(handler)
 	if err != nil {
 		log.Fatal(err)
 		return

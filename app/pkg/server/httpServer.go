@@ -1,7 +1,6 @@
 package server
 
 import (
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"time"
 )
@@ -14,10 +13,10 @@ func NewServer() *Server {
 	return &Server{}
 }
 
-func (s *Server) Run(router *httprouter.Router) error {
+func (s *Server) Run(handler http.Handler) error {
 	s.httpServer = &http.Server{
 		Addr:              ":8080",
-		Handler:           router,
+		Handler:           handler,
 		TLSConfig:         nil,
 		ReadTimeout:       20 * time.Second,
 		ReadHeaderTimeout: 20 * time.Second,
