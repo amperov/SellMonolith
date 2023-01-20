@@ -63,7 +63,6 @@ func (h *HistoryStorage) GetOne(ctx context.Context, UserID, TransactID int) (ma
 	if err != nil {
 		return nil, err
 	}
-
 	row := h.c.QueryRow(ctx, query, args...)
 
 	err = row.Scan(&transtact.Category, &transtact.Subcategory, &transtact.UniqueCode.UniqueCode,
@@ -75,6 +74,7 @@ func (h *HistoryStorage) GetOne(ctx context.Context, UserID, TransactID int) (ma
 		return nil, err
 	}
 	transtact.UserID = UserID
+	transtact.ID = TransactID
 	var mm = make(map[string]interface{})
 	mm["transaction"] = transtact.ToMap()
 	return mm, nil

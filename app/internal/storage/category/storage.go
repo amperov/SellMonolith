@@ -40,12 +40,14 @@ func (c *CategoryStorage) Create(ctx context.Context, m map[string]interface{}) 
 	var id int
 	query, args, err := squirrel.Insert(table).SetMap(m).PlaceholderFormat(squirrel.Dollar).Suffix("RETURNING id").ToSql()
 	if err != nil {
+		log.Println(err)
 		return 0, err
 	}
 
 	row := c.c.QueryRow(ctx, query, args...)
 	err = row.Scan(&id)
 	if err != nil {
+		log.Println(err)
 		return 0, err
 	}
 	return id, nil
@@ -55,12 +57,14 @@ func (c *CategoryStorage) Update(ctx context.Context, m map[string]interface{}, 
 	var id int
 	query, args, err := squirrel.Update(table).Where(squirrel.Eq{"id": CatID}).PlaceholderFormat(squirrel.Dollar).Suffix("RETURNING id").SetMap(m).ToSql()
 	if err != nil {
+		log.Println(err)
 		return 0, err
 	}
 
 	row := c.c.QueryRow(ctx, query, args...)
 	err = row.Scan(&id)
 	if err != nil {
+		log.Println(err)
 		return 0, err
 	}
 	return id, nil
@@ -69,10 +73,12 @@ func (c *CategoryStorage) Update(ctx context.Context, m map[string]interface{}, 
 func (c *CategoryStorage) Delete(ctx context.Context, CatID int) error {
 	query, args, err := squirrel.Delete(table).Where(squirrel.Eq{"id": CatID}).PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	_, err = c.c.Exec(ctx, query, args...)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 

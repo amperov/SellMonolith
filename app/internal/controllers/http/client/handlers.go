@@ -33,9 +33,11 @@ func (h *ClientHandlers) Register(r *httprouter.Router) {
 func (h *ClientHandlers) GetProducts(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	uniqueCode := r.URL.Query().Get("uniquecode")
 	name := params.ByName("username")
+	log.Printf("Get products of %s\nUnique Code: %s", name, uniqueCode)
 
 	prods, err := h.c.Get(r.Context(), uniqueCode, name)
 	if err != nil {
+		log.Printf("error: %+v", err)
 		w.WriteHeader(500)
 		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
@@ -43,6 +45,7 @@ func (h *ClientHandlers) GetProducts(w http.ResponseWriter, r *http.Request, par
 
 	prodsMarshalled, err := json.Marshal(prods)
 	if err != nil {
+		log.Printf("error: %+v", err)
 		w.WriteHeader(500)
 		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return
@@ -50,6 +53,7 @@ func (h *ClientHandlers) GetProducts(w http.ResponseWriter, r *http.Request, par
 
 	_, err = w.Write(prodsMarshalled)
 	if err != nil {
+		log.Printf("error: %+v", err)
 		w.WriteHeader(500)
 		w.Write([]byte(fmt.Sprintf(`"error": "%v"`, err)))
 		return

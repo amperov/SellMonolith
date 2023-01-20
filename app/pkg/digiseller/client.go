@@ -48,7 +48,7 @@ type SubcategoryStore interface {
 type ProductStore interface {
 	GetSomeProducts(ctx context.Context, SubcatID int, Count int) ([]map[string]interface{}, error)
 	DeleteOne(ctx context.Context, ProdID int) error
-	SearchByUniqueCode(ctx context.Context, UniqueCode string) ([]map[string]interface{}, bool)
+	SearchByUniqueCode(ctx context.Context, UniqueCode string) ([]map[string]interface{}, bool, error)
 }
 
 type DigiClient struct {
@@ -109,6 +109,7 @@ func (c *DigiClient) Auth(ctx context.Context, Username string) string {
 }
 
 func (c *DigiClient) GetProducts(ctx context.Context, UniqueCode, Token string) ([]map[string]interface{}, error) {
+	log.Println("Get Products")
 	var input DigiInput
 	var tran seller.Transaction
 
@@ -129,7 +130,7 @@ func (c *DigiClient) GetProducts(ctx context.Context, UniqueCode, Token string) 
 		log.Println(err)
 		return nil, err
 	}
-
+	log.Println(input)
 	CatID, UserID, err := c.c.GetID(ctx, input.Options[0].Name)
 	if err != nil {
 		log.Println("Cat error: ", err)

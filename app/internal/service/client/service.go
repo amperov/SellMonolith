@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"log"
 )
 
 type ClientDigi interface {
@@ -11,7 +12,7 @@ type ClientDigi interface {
 
 type ProductStore interface {
 	Check(ctx context.Context, ItemID int) (bool, error)
-	SearchByUniqueCode(ctx context.Context, UniqueCode string) ([]map[string]interface{}, bool)
+	SearchByUniqueCode(ctx context.Context, UniqueCode string) ([]map[string]interface{}, bool, error)
 }
 
 type ClientService struct {
@@ -28,8 +29,9 @@ func NewClientService(c ClientDigi, p ProductStore) *ClientService {
 }
 
 func (c *ClientService) Get(ctx context.Context, UniqueCode string, Username string) ([]map[string]interface{}, error) {
-	prods, ok := c.p.SearchByUniqueCode(ctx, UniqueCode)
+	prods, ok, err := c.p.SearchByUniqueCode(ctx, UniqueCode)
 	if ok == false {
+		log.Println("ok != true\nGet info from digiseller")
 		token := c.c.Auth(ctx, Username)
 		get, err := c.c.GetProducts(ctx, UniqueCode, token)
 
@@ -38,6 +40,10 @@ func (c *ClientService) Get(ctx context.Context, UniqueCode string, Username str
 		}
 		return get, nil
 	}
-
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	log.Println("ok == true???")
 	return prods, nil
 }
