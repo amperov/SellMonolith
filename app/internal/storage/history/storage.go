@@ -81,7 +81,7 @@ func (h *HistoryStorage) GetOne(ctx context.Context, UserID, TransactID int) (ma
 }
 func (h *HistoryStorage) GetOneByUniqueCode(ctx context.Context, UniqueCode string) (map[string]interface{}, error) {
 	var transtact Transaction
-	var m map[string]interface{}
+	m := make(map[string]interface{})
 	query, args, err := squirrel.
 		Select("id", "category_name", "subcategory_name",
 			"client_email", "amount", "profit", "count",
