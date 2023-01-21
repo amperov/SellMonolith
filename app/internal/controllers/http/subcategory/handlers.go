@@ -149,12 +149,14 @@ func (h *SubcategoryHandler) DeleteSubcategory(w http.ResponseWriter, r *http.Re
 
 	err = h.sc.Delete(r.Context(), UserID, CatID, SubCatID)
 	if err != nil {
+		log.Println(err)
 		w.WriteHeader(500)
 		return
 	}
 
 	_, err = w.Write([]byte(fmt.Sprintf(`{"success" : "subcategory deleted"}`)))
 	if err != nil {
+		log.Println(err)
 		w.WriteHeader(500)
 		return
 	}
