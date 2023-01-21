@@ -26,7 +26,8 @@ func (p *ProductStorage) SearchByUniqueCode(ctx context.Context, UniqueCode stri
 	log.Println("Searching in ", transactionTable, "for unique code: ", UniqueCode)
 	var arrayMap []map[string]interface{}
 
-	query, args, err := squirrel.Select("id", "content_key", "category_name", "subcategory_name", "date_check").From(transactionTable).
+	query, args, err := squirrel.Select("id", "content_key", "category_name", "subcategory_name", "date_check").
+		From(transactionTable).
 		Where(squirrel.Eq{"unique_code": UniqueCode}).PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
 		log.Println(err)
@@ -51,7 +52,8 @@ func (p *ProductStorage) SearchByUniqueCode(ctx context.Context, UniqueCode stri
 
 	//////
 	var exists bool
-	query, args, err = squirrel.Select("id", "content_key", "category_name", "subcategory_name", "date_check").From(transactionTable).
+	query, args, err = squirrel.Select("id", "content_key", "category_name", "subcategory_name", "date_check").
+		From(transactionTable).
 		Prefix("SELECT EXISTS(").Suffix(")").
 		Where(squirrel.Eq{"unique_code": UniqueCode}).
 		PlaceholderFormat(squirrel.Dollar).ToSql()
