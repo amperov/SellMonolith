@@ -89,7 +89,7 @@ func (h *ClientHandlers) PreCheck(w http.ResponseWriter, request *http.Request, 
 		return
 	}
 
-	log.Println(input)
+	log.Printf("%+v", input)
 	check, err := h.c.Check(request.Context(), input.Options.Option[0].Value)
 	if err != nil {
 		log.Print(err)
