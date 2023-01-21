@@ -13,18 +13,18 @@ CREATE TABLE category(
     title_eng text,
     item_id int,
     description text,
-    user_id int references sellers (id)
+    user_id int references sellers (id) ON DELETE CASCADE
 );
 CREATE TABLE subcategory (
     id serial primary key ,
     title text not null unique ,
     subitem_id int,
-    category_id int references category (id)
+    category_id int references category (id) ON DELETE CASCADE
 );
 CREATE TABLE products (
     id serial primary key ,
     content_key text not null unique ,
-    subcategory_id int references subcategory (id)
+    subcategory_id int references subcategory (id) ON DELETE CASCADE
 );
 
 CREATE TABLE transactions(
