@@ -26,8 +26,7 @@ func (p *ProductStorage) SearchByUniqueCode(ctx context.Context, UniqueCode stri
 	log.Println("Searching in ", transactionTable, "for unique code: ", UniqueCode)
 	var arrayMap []map[string]interface{}
 
-	query, args, err := squirrel.Select("id", "content_key", "category_name", "subcategory_name", "date_check").
-		From(transactionTable).
+	query, args, err := squirrel.Select("id", "content_key", "category_name", "subcategory_name", "date_check").From(transactionTable).
 		Where(squirrel.Eq{"unique_code": UniqueCode}).PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
 		log.Println(err)
@@ -52,8 +51,7 @@ func (p *ProductStorage) SearchByUniqueCode(ctx context.Context, UniqueCode stri
 
 	//////
 	var exists bool
-	query, args, err = squirrel.Select("id", "content_key", "category_name", "subcategory_name", "date_check").
-		From(transactionTable).
+	query, args, err = squirrel.Select("id", "content_key", "category_name", "subcategory_name", "date_check").From(transactionTable).
 		Prefix("SELECT EXISTS(").Suffix(")").
 		Where(squirrel.Eq{"unique_code": UniqueCode}).
 		PlaceholderFormat(squirrel.Dollar).ToSql()
@@ -195,16 +193,31 @@ func (p *ProductStorage) DeleteOne(ctx context.Context, ProdID int) error {
 func (p *ProductStorage) Check(ctx context.Context, ItemID int) (bool, error) {
 	var exists bool
 
-	query, args, err := squirrel.Select("id").Prefix("SELECT EXISTS(").Suffix(")").From(prodTable).Where(squirrel.Eq{"subcategory_id": id}).PlaceholderFormat(squirrel.Dollar).ToSql()
+	var id int
+	var subcatStr string
+	query, args, err := squirrel.Select("id", "title").PlaceholderFormat(squirrel.Dollar).
+		Where(squirrel.Eq{"subitem_id": ItemID}).From("subcategory").ToSql()
 	if err != nil {
-		log.Println(err)
 		return false, err
 	}
 
 	row := p.c.QueryRow(ctx, query, args...)
+	err = row.Scan(&id, &subcatStr)
+	if err != nil {
+		log.Println(err)
+		return false, err
+	}
+	log.Printf("Человек купил этот подтип: %s", subcatStr)
+	/////
+	query, args, err = squirrel.Select("id").Prefix("SELECT EXISTS(").Suffix(")").From(prodTable).Where(squirrel.Eq{"subcategory_id": id}).PlaceholderFormat(squirrel.Dollar).ToSql()
+	if err != nil {
+		return false, err
+	}
+
+	row = p.c.QueryRow(ctx, query, args...)
 	err = row.Scan(&exists)
 	if err != nil {
-		log.Printf("scan: %v", err)
+		log.Println("Scan prods err: ", err)
 		return false, err
 	}
 	return exists, nil
