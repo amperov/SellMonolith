@@ -110,12 +110,11 @@ func (h *ClientHandlers) PreCheck(w http.ResponseWriter, request *http.Request, 
 		log.Print(err)
 		return
 	}
+	log.Println(check)
 	if check == false {
 		w.WriteHeader(400)
 		w.Write([]byte(`"error": "we haven't this products"`))
+		return
 	}
-	if check == true {
-		log.Println("Request for search key: ", input.Product.ID)
-		w.WriteHeader(200)
-	}
+
 }
