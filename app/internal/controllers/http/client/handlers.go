@@ -100,8 +100,9 @@ func (h *ClientHandlers) PreCheck(w http.ResponseWriter, request *http.Request, 
 
 	for _, option := range input.Options.Option {
 		if option.Type == "radio" {
+			SubItemID = option.Text
 		}
-		SubItemID = option.Text
+
 	}
 
 	check, err := h.c.Check(request.Context(), SubItemID)

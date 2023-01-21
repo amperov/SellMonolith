@@ -203,13 +203,14 @@ func (p *ProductStorage) Check(ctx context.Context, ItemID int) (bool, error) {
 
 	row := p.c.QueryRow(ctx, query, args...)
 	err = row.Scan(&id, &subcatStr)
+	log.Println(id, subcatStr)
 	if err != nil {
 		log.Println(err)
 		return false, err
 	}
-	log.Printf("Человек купил этот подтип: %s", subcatStr)
-	/////
-	query, args, err = squirrel.Select("id").Prefix("SELECT EXISTS(").Suffix(")").From(prodTable).Where(squirrel.Eq{"subcategory_id": id}).PlaceholderFormat(squirrel.Dollar).ToSql()
+
+	query, args, err = squirrel.Select("id").Prefix("SELECT EXISTS(").Suffix(")").From(prodTable).
+		Where(squirrel.Eq{"subcategory_id": id}).PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
 		return false, err
 	}
