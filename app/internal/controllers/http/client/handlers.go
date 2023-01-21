@@ -114,7 +114,8 @@ func (h *ClientHandlers) PreCheck(w http.ResponseWriter, request *http.Request, 
 	if check == false {
 		w.WriteHeader(400)
 		w.Write([]byte(`"error": "we haven't this products"`))
+		log.Println(err)
 		return
 	}
-
+	w.WriteHeader(200)
 }
