@@ -65,10 +65,12 @@ type Request struct {
 	Product struct {
 		ID int `xml:"id"`
 	} `xml:"product"`
-	Options []struct {
-		ID    int    `xml:"id"`
-		Type  string `xml:"type"`
-		Value string `xml:"value"`
+	Options struct {
+		Option []struct {
+			ID    int    `xml:"id"`
+			Type  string `xml:"type"`
+			Value int    `xml:"value"`
+		}
 	} `xml:"options"`
 }
 
@@ -88,14 +90,20 @@ func (h *ClientHandlers) PreCheck(w http.ResponseWriter, request *http.Request, 
 	}
 
 	log.Println(input)
-	check, err := h.c.Check(request.Context(), input.Options[0].ID)
+	check, err := h.c.Check(request.Context(), input.Options.Option[0].Value)
 	if err != nil {
+		log.Print(err)
 		return
 	}
 	if check == false {
-		w.WriteHeader(400)
-		w.Write([]byte(`"error": "we haven't this products"`))
-		return
+		checkTwo, err := h.c.Check(request.Context(), input.Options.Option[1].Value)
+		if err != nil {
+			return
+		}
+		if checkTwo != true {
+			w.WriteHeader(400)
+			w.Write([]byte(`"error": "we haven't this products"`))
+		}
 	}
 	if check == true {
 		log.Println("Request for search key: ", input.Product.ID)
