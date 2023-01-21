@@ -96,21 +96,22 @@ func (h *ClientHandlers) PreCheck(w http.ResponseWriter, request *http.Request, 
 	}
 
 	log.Printf("%+v", input)
+	var SubItemID int
 
-	check, err := h.c.Check(request.Context(), input.Options.Option[0].Text)
+	for _, option := range input.Options.Option {
+		if option.Type == "radio" {
+		}
+		SubItemID = option.Text
+	}
+
+	check, err := h.c.Check(request.Context(), SubItemID)
 	if err != nil {
 		log.Print(err)
 		return
 	}
 	if check == false {
-		/*checkTwo, err := h.c.Check(request.Context(), input.Options.Option[1].Option)
-		if err != nil {
-			return
-		}
-		if checkTwo != true {
-			w.WriteHeader(400)
-			w.Write([]byte(`"error": "we haven't this products"`))
-		}*/
+		w.WriteHeader(400)
+		w.Write([]byte(`"error": "we haven't this products"`))
 	}
 	if check == true {
 		log.Println("Request for search key: ", input.Product.ID)
