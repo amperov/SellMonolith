@@ -194,7 +194,7 @@ func (p *ProductStorage) Check(ctx context.Context, ItemID int) (bool, error) {
 	var exists bool
 	var id int
 	var subcatStr string
-	query, args, err := squirrel.Select("id", "title").PlaceholderFormat(squirrel.Dollar).Where(squirrel.Eq{"item_id": ItemID}).From("subcategory").ToSql()
+	query, args, err := squirrel.Select("id", "title").PlaceholderFormat(squirrel.Dollar).Where(squirrel.Eq{"subitem_id": ItemID}).From("subcategory").ToSql()
 	if err != nil {
 		return false, err
 	}

@@ -66,11 +66,9 @@ type Request struct {
 		ID int `xml:"id"`
 	} `xml:"product"`
 	Options struct {
-		Option []struct {
-			ID     int    `xml:"id,attr"`
-			Type   string `xml:"type,attr"`
-			Option int    `xml:"option"`
-		} `xml:"option"`
+		ID     int    `xml:"id,attr"`
+		Type   string `xml:"type,attr"`
+		Option int    `xml:"option"`
 	} `xml:"options"`
 }
 
@@ -91,7 +89,7 @@ func (h *ClientHandlers) PreCheck(w http.ResponseWriter, request *http.Request, 
 
 	log.Printf("%+v", input)
 
-	check, err := h.c.Check(request.Context(), input.Options.Option[0].Option)
+	check, err := h.c.Check(request.Context(), input.Options.Option)
 	if err != nil {
 		log.Print(err)
 		return
