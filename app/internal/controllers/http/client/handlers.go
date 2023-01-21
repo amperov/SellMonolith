@@ -62,13 +62,21 @@ func (h *ClientHandlers) GetProducts(w http.ResponseWriter, r *http.Request, par
 }
 
 type Request struct {
+	XMLName xml.Name `xml:"request"`
+	Text    string   `xml:",chardata"`
 	Product struct {
-		ID int `xml:"id"`
+		Text string `xml:",chardata"`
+		ID   string `xml:"id"`
+		Cnt  string `xml:"cnt"`
+		Lang string `xml:"lang"`
 	} `xml:"product"`
 	Options struct {
-		ID     int    `xml:"id,attr"`
-		Type   string `xml:"type,attr"`
-		Option int    `xml:"option"`
+		Text   string `xml:",chardata"`
+		Option []struct {
+			Text int    `xml:",chardata"`
+			ID   string `xml:"id,attr"`
+			Type string `xml:"type,attr"`
+		} `xml:"option"`
 	} `xml:"options"`
 }
 
@@ -89,7 +97,7 @@ func (h *ClientHandlers) PreCheck(w http.ResponseWriter, request *http.Request, 
 
 	log.Printf("%+v", input)
 
-	check, err := h.c.Check(request.Context(), input.Options.Option)
+	check, err := h.c.Check(request.Context(), input.Options.Option[0].Text)
 	if err != nil {
 		log.Print(err)
 		return
