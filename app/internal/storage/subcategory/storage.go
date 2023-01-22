@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
-	"log"
 	"sort"
 )
 
@@ -24,13 +23,13 @@ func (c *SubcategoryStorage) GetAll(ctx context.Context, CatID int) ([]map[strin
 	var subcats []Subcategory
 	query, args, err := squirrel.Select("id", "title", "subitem_id").Where(squirrel.Eq{"category_id": CatID}).PlaceholderFormat(squirrel.Dollar).From(table).ToSql()
 	if err != nil {
-		log.Printf("error make query: %v", err)
+		logrus.Printf("error make query: %v", err)
 		return nil, err
 	}
 
 	rows, err := c.c.Query(ctx, query, args...)
 	if err != nil {
-		log.Printf("error query: %v", err)
+		logrus.Printf("error query: %v", err)
 		return nil, err
 	}
 	var arrayMap []map[string]interface{}
@@ -39,19 +38,16 @@ func (c *SubcategoryStorage) GetAll(ctx context.Context, CatID int) ([]map[strin
 
 		err = rows.Scan(&cat.ID, &cat.Title, &cat.SubItemID)
 		if err != nil {
-			log.Printf("error scan: %v", err)
+			logrus.Printf("error scan: %v", err)
 			return nil, err
 		}
 		cat.CategoryID = CatID
 		subcats = append(subcats, cat)
 	}
 
-	log.Println(subcats)
-	log.Println()
 	sort.Slice(subcats, func(i, j int) bool {
-		return subcats[i].Title < subcats[j].Title
+		return subcats[i].SubItemID < subcats[j].SubItemID
 	})
-	log.Println(subcats)
 
 	for _, subcategory := range subcats {
 		arrayMap = append(arrayMap, subcategory.ToMap())
@@ -68,6 +64,7 @@ func (c *SubcategoryStorage) GetCount(ctx context.Context, CatID int) (int, erro
 
 	err := row.Scan(&count)
 	if err != nil {
+		logrus.Printf("error: %v", err)
 		return 0, err
 	}
 	return count, nil
@@ -83,6 +80,7 @@ func (c *SubcategoryStorage) Create(ctx context.Context, m map[string]interface{
 	row := c.c.QueryRow(ctx, query, args...)
 	err = row.Scan(&id)
 	if err != nil {
+		logrus.Printf("error: %v", err)
 		return 0, err
 	}
 	return id, nil
@@ -93,12 +91,14 @@ func (c *SubcategoryStorage) Update(ctx context.Context, m map[string]interface{
 	query, args, err := squirrel.Update(table).Where(squirrel.Eq{"id": SubCatID}).
 		PlaceholderFormat(squirrel.Dollar).Suffix("RETURNING id").SetMap(m).ToSql()
 	if err != nil {
+		logrus.Printf("error: %v", err)
 		return 0, err
 	}
 
 	row := c.c.QueryRow(ctx, query, args...)
 	err = row.Scan(&id)
 	if err != nil {
+		logrus.Printf("error: %v", err)
 		return 0, err
 	}
 	return id, nil
@@ -107,10 +107,12 @@ func (c *SubcategoryStorage) Update(ctx context.Context, m map[string]interface{
 func (c *SubcategoryStorage) Delete(ctx context.Context, SubCatID int) error {
 	query, args, err := squirrel.Delete(table).Where(squirrel.Eq{"id": SubCatID}).PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
+		logrus.Printf("error: %v", err)
 		return err
 	}
 	_, err = c.c.Exec(ctx, query, args...)
 	if err != nil {
+		logrus.Printf("error: %v", err)
 		return err
 	}
 	return nil
@@ -122,12 +124,14 @@ func (c *SubcategoryStorage) Get(ctx context.Context, SubCatID int) (map[string]
 	query, args, err := squirrel.Select("title", "category_id", "subitem_id").Where(squirrel.Eq{"id": SubCatID}).From(table).
 		PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
+		logrus.Printf("error: %v", err)
 		return nil, err
 	}
 
 	row := c.c.QueryRow(ctx, query, args...)
 	err = row.Scan(&cat.Title, &cat.CategoryID, &cat.SubItemID)
 	if err != nil {
+		logrus.Printf("error: %v", err)
 		return nil, err
 	}
 
@@ -141,6 +145,7 @@ func (c *SubcategoryStorage) GetID(ctx context.Context, SubcategoryName string, 
 		Where(squirrel.Eq{"title": SubcategoryName, "category_id": CategoryID}).
 		PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
+		logrus.Printf("error: %v", err)
 		return 0, err
 	}
 
