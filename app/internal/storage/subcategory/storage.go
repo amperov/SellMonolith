@@ -68,6 +68,8 @@ func Sort(subcats []Subcategory) []Subcategory {
 	for i := 0; i < len(subcats)-1; i++ {
 		if subcats[i].Title > subcats[i+1].Title {
 			subcats[i+1], subcats[i] = subcats[i], subcats[i+1]
+		} else if subcats[i].Title < subcats[i+1].Title {
+			subcats[i], subcats[i+1] = subcats[i+1], subcats[i]
 		}
 	}
 	return subcats
