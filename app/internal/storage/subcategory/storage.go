@@ -44,8 +44,9 @@ func (c *SubcategoryStorage) GetAll(ctx context.Context, CatID int) ([]map[strin
 		cat.CategoryID = CatID
 		subcats = append(subcats, cat)
 	}
+	log.Println(subcats)
 	subcategories := Sort(subcats)
-
+	log.Println(subcategories)
 	for _, subcategory := range subcategories {
 		arrayMap = append(arrayMap, subcategory.ToMap())
 	}
@@ -56,8 +57,8 @@ func (c *SubcategoryStorage) GetAll(ctx context.Context, CatID int) ([]map[strin
 func Sort(subcats []Subcategory) []Subcategory {
 	for i := 0; i < len(subcats)-1; i++ {
 		if subcats[i].Title > subcats[i+1].Title {
-			subcats[i+1].Title = subcats[i].Title
-			subcats[i].Title = subcats[i+1].Title
+			subcats[i+1] = subcats[i]
+			subcats[i] = subcats[i+1]
 		}
 	}
 	return subcats
