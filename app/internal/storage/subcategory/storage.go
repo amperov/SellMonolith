@@ -54,11 +54,20 @@ func (c *SubcategoryStorage) GetAll(ctx context.Context, CatID int) ([]map[strin
 	return arrayMap, nil
 }
 
+type ByTitle []Subcategory
+
+func (t ByTitle) Less(i, j int) bool {
+
+	return t[i].Title < t[j].Title
+}
+
+func (t ByTitle) Len() int {
+	return len(t)
+}
 func Sort(subcats []Subcategory) []Subcategory {
 	for i := 0; i < len(subcats)-1; i++ {
 		if subcats[i].Title > subcats[i+1].Title {
-			subcats[i+1] = subcats[i]
-			subcats[i] = subcats[i+1]
+			subcats[i+1], subcats[i] = subcats[i], subcats[i+1]
 		}
 	}
 	return subcats
