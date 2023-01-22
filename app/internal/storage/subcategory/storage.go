@@ -20,7 +20,7 @@ func NewSubcategoryStorage(c *pgxpool.Pool) *SubcategoryStorage {
 }
 
 func (c *SubcategoryStorage) GetAll(ctx context.Context, CatID int) ([]map[string]interface{}, error) {
-
+	var subcats []Subcategory
 	query, args, err := squirrel.Select("id", "title", "subitem_id").Where(squirrel.Eq{"category_id": CatID}).PlaceholderFormat(squirrel.Dollar).From(table).ToSql()
 	if err != nil {
 		log.Printf("error make query: %v", err)
@@ -42,10 +42,25 @@ func (c *SubcategoryStorage) GetAll(ctx context.Context, CatID int) ([]map[strin
 			return nil, err
 		}
 		cat.CategoryID = CatID
-		arrayMap = append(arrayMap, cat.ToMap())
+		subcats = append(subcats, cat)
+	}
+	subcategories := Sort(subcats)
+
+	for _, subcategory := range subcategories {
+		arrayMap = append(arrayMap, subcategory.ToMap())
 	}
 
 	return arrayMap, nil
+}
+
+func Sort(subcats []Subcategory) []Subcategory {
+	for i := 0; i < len(subcats)-1; i++ {
+		if subcats[i].Title > subcats[i+1].Title {
+			subcats[i+1].Title = subcats[i].Title
+			subcats[i].Title = subcats[i+1].Title
+		}
+	}
+	return subcats
 }
 
 func (c *SubcategoryStorage) GetCount(ctx context.Context, CatID int) (int, error) {
