@@ -163,6 +163,13 @@ func (c *DigiClient) GetProducts(ctx context.Context, UniqueCode, Token string) 
 		return nil, err
 	}
 
+	for _, product := range products {
+		product["client_email"] = tran.ClientEmail
+		product["category"] = tran.Category
+		product["subcategory"] = tran.Subcategory
+		product["date_check"] = tran.DateCheck
+	}
+
 	for i := 0; i < len(products); i++ {
 		prod := products[i]
 		err := c.p.DeleteOne(ctx, prod["id"].(int))
