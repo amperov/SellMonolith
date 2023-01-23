@@ -6,6 +6,7 @@ type AllTransactInput struct {
 	ID          int
 	UniqueCode  string
 	AmountUSD   int
+	CLientEmail string
 	Category    string
 	Subcategory string
 	Content     string
