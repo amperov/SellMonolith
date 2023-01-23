@@ -117,6 +117,6 @@ func (h *ClientHandlers) PreCheck(w http.ResponseWriter, request *http.Request, 
 		log.Println(err)
 		return
 	}
-	w.Write([]byte(`"error": ""`))
+	w.Write([]byte(`{"error": ""}`))
 	w.WriteHeader(200)
 }
