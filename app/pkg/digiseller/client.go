@@ -167,7 +167,8 @@ func (c *DigiClient) GetProducts(ctx context.Context, UniqueCode, Token string) 
 		product["client_email"] = tran.ClientEmail
 		product["category"] = tran.Category
 		product["subcategory"] = tran.Subcategory
-		product["date_check"] = tran.DateCheck
+		product["date_check"] = tran.UniqueCode.DateCheck
+		log.Println(product)
 	}
 
 	for i := 0; i < len(products); i++ {
