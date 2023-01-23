@@ -19,6 +19,7 @@ func (i *AllTransactInput) ToMap() map[string]interface{} {
 	m["id"] = i.ID
 	m["unique_code"] = i.UniqueCode
 	m["amount_usd"] = i.AmountUSD
+	m["client_email"] = i.CLientEmail
 	m["category_name"] = i.Category
 	m["subcategory_name"] = i.Subcategory
 	m["content_key"] = i.Content
