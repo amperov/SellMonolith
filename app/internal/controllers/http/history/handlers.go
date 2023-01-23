@@ -33,6 +33,11 @@ func (h *HistoryHandler) Register(r *httprouter.Router) {
 func (h *HistoryHandler) GetHistory(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	UserID := r.Context().Value("user_id").(int)
 
+	if UserID == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	transactions, err := h.hs.GetAllTransactions(r.Context(), UserID)
 	if err != nil {
 		w.WriteHeader(500)
@@ -58,6 +63,11 @@ func (h *HistoryHandler) GetHistory(w http.ResponseWriter, r *http.Request, _ ht
 
 func (h *HistoryHandler) GetFullTransaction(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	UserID := r.Context().Value("user_id").(int)
+
+	if UserID == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
 	tran_id := params.ByName("tran_id")
 	tranID, err := strconv.Atoi(tran_id)

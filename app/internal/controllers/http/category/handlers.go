@@ -56,7 +56,9 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request,
 
 	if UserID == 0 {
 		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
+
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(400)
@@ -89,6 +91,11 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request,
 func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	var upd UpdateCategoryInput
 	UserID := r.Context().Value("user_id").(int)
+
+	if UserID == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
@@ -126,6 +133,11 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request,
 func (h *CategoryHandler) DeleteCategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	UserID := r.Context().Value("user_id").(int)
 
+	if UserID == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
@@ -151,6 +163,11 @@ func (h *CategoryHandler) DeleteCategory(w http.ResponseWriter, r *http.Request,
 
 func (h *CategoryHandler) GetCategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	UserID := r.Context().Value("user_id").(int)
+
+	if UserID == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
@@ -202,6 +219,11 @@ func (h *CategoryHandler) GetCategory(w http.ResponseWriter, r *http.Request, pa
 
 func (h *CategoryHandler) GetAllCategory(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	UserID := r.Context().Value("user_id").(int)
+
+	if UserID == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
 	cats, err := h.cat.GetAll(r.Context(), UserID)
 	if err != nil {

@@ -46,6 +46,11 @@ func (h *SubcategoryHandler) CreateSubcategory(w http.ResponseWriter, r *http.Re
 
 	UserID := r.Context().Value("user_id").(int)
 
+	if UserID == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
@@ -91,6 +96,12 @@ func (h *SubcategoryHandler) UpdateSubcategory(w http.ResponseWriter, r *http.Re
 	var input UpdateSubcatInput
 
 	UserID := r.Context().Value("user_id").(int)
+
+	if UserID == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
@@ -134,6 +145,11 @@ func (h *SubcategoryHandler) DeleteSubcategory(w http.ResponseWriter, r *http.Re
 	w.Header().Add("Content-Type", "application/json")
 	UserID := r.Context().Value("user_id").(int)
 
+	if UserID == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
@@ -166,6 +182,11 @@ func (h *SubcategoryHandler) DeleteSubcategory(w http.ResponseWriter, r *http.Re
 func (h *SubcategoryHandler) GetSubcategory(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	w.Header().Add("Content-Type", "application/json")
 	UserID := r.Context().Value("user_id").(int)
+
+	if UserID == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)

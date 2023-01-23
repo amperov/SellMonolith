@@ -40,6 +40,11 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request, p
 
 	UserID := r.Context().Value("user_id").(int)
 
+	if UserID == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
@@ -99,6 +104,11 @@ func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request, p
 	w.Header().Add("Content-Type", "application/json")
 	UserID := r.Context().Value("user_id").(int)
 
+	if UserID == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
 	if err != nil {
@@ -142,6 +152,11 @@ func (h *ProductHandler) CreateOne(w http.ResponseWriter, r *http.Request, param
 	var input CreateProductInput
 
 	UserID := r.Context().Value("user_id").(int)
+
+	if UserID == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
@@ -195,6 +210,11 @@ func (h *ProductHandler) CreateMany(w http.ResponseWriter, r *http.Request, para
 	var input CreateProductInput
 
 	UserID := r.Context().Value("user_id").(int)
+
+	if UserID == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
 	catID := params.ByName("cat_id")
 	CatID, err := strconv.Atoi(catID)
