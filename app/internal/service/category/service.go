@@ -8,7 +8,7 @@ type CategoryStore interface {
 	Create(ctx context.Context, m map[string]interface{}) (int, error)
 	Update(ctx context.Context, m map[string]interface{}, CatID int) (int, error)
 	Delete(ctx context.Context, CatID int) error
-	GetOne(ctx context.Context, CatID int) (map[string]interface{}, error)
+	GetOne(ctx context.Context, CatID, UserID int) (map[string]interface{}, error)
 	GetAll(ctx context.Context, UserID int) ([]map[string]interface{}, error)
 }
 type CategoryService struct {
@@ -44,7 +44,7 @@ func (c *CategoryService) Delete(ctx context.Context, UserID int, CatID int) err
 }
 
 func (c *CategoryService) GetOne(ctx context.Context, UserID int, CatID int) (map[string]interface{}, error) {
-	m, err := c.c.GetOne(ctx, CatID)
+	m, err := c.c.GetOne(ctx, CatID, UserID)
 	if err != nil {
 		return nil, err
 	}

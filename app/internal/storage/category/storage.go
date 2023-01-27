@@ -85,11 +85,11 @@ func (c *CategoryStorage) Delete(ctx context.Context, CatID int) error {
 	return nil
 }
 
-func (c *CategoryStorage) GetOne(ctx context.Context, CatID int) (map[string]interface{}, error) {
+func (c *CategoryStorage) GetOne(ctx context.Context, CatID, UserID int) (map[string]interface{}, error) {
 	var cat Category
 
 	query, args, err := squirrel.Select("title_ru", "title_eng", "description", "user_id", "item_id").
-		Where(squirrel.Eq{"id": CatID}).From(table).
+		Where(squirrel.Eq{"id": CatID, "user_id": UserID}).From(table).
 		PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
 		return nil, err

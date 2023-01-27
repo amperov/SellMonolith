@@ -130,7 +130,7 @@ func (c *DigiClient) GetProducts(ctx context.Context, UniqueCode, Token string) 
 		log.Println(err)
 		return nil, err
 	}
-	log.Println(input)
+
 	CatID, UserID, err := c.c.GetID(ctx, input.Options[0].Name)
 	if err != nil {
 		log.Println("Cat error: ", err)
@@ -168,6 +168,7 @@ func (c *DigiClient) GetProducts(ctx context.Context, UniqueCode, Token string) 
 		product["category"] = tran.Category
 		product["subcategory"] = tran.Subcategory
 		product["date_check"] = tran.UniqueCode.DateCheck
+		product["unique_inv"] = tran.UniqueInv
 		log.Println(product)
 	}
 
